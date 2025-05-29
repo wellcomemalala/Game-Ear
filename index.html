@@ -54,7 +54,7 @@
             card: 'slate.800',
             'card-muted': 'rgba(45, 55, 72, 0.5)', // slate-700 with opacity for slight transparency
             textBase: 'slate.100',
-            textMuted: 'slate.400',
+            textMuted: 'slate.400', // Should be avoided for new text, aim for brighter alternatives
             borderDefault: 'slate.700',
             borderMuted: 'slate.600',
             
@@ -160,7 +160,7 @@
       .text-shadow-sm {
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
       }
-      .text-shadow {
+      .text-shadow { /* Standard shadow, can be used if outline is too much for some elements */
         text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.24);
       }
       .text-shadow-md {
@@ -169,16 +169,19 @@
       .text-shadow-lg {
         text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), 0 3px 6px rgba(0, 0, 0, 0.22);
       }
-      .text-shadow-strong { /* Keeping for other potential uses, but replacing in problem areas */
-        text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.9);
-      }
-      .text-outline-black { /* New outline effect */
+      .text-shadow-strong { /* Synced with text-outline-black for simplicity */
         text-shadow:
-          -1px -1px 0 #000,
+          -1px -1px 0 #000,  
            1px -1px 0 #000,
           -1px  1px 0 #000,
-           1px  1px 0 #000,
-           0 1px 2px rgba(0,0,0,0.7); /* Subtle downward blur */
+           1px  1px 0 #000;
+      }
+      .text-outline-black { /* Crisper outline for better readability */
+        text-shadow:
+          -1px -1px 0 #000,  
+           1px -1px 0 #000,
+          -1px  1px 0 #000,
+           1px  1px 0 #000;
       }
       .text-shadow-none {
         text-shadow: none;
@@ -188,9 +191,9 @@
 <script type="importmap">
 {
   "imports": {
-    "react/": "https://esm.sh/react@^19.1.0/",
     "react": "https://esm.sh/react@^19.1.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.1.0/"
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "react/": "https://esm.sh/react@^19.1.0/"
   }
 }
 </script>

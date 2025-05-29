@@ -37,7 +37,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
     <div className="w-full max-w-xl mx-auto bg-card p-6 md:p-8 rounded-xl shadow-2xl">
       <div className="flex justify-between items-center mb-8 pb-4 border-b border-borderDefault">
         <button onClick={onBackToMenu} className="btn-back">&larr; {UI_TEXT_TH.backToMenu}</button>
-        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-info-light to-info flex items-center">
+        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-info-light to-info flex items-center text-outline-black">
           <CogIcon className="w-8 h-8 mr-3" />
           {UI_TEXT_TH.settingsTitle}
         </h1>
@@ -45,8 +45,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
       </div>
 
       <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-3 text-primary-light">{UI_TEXT_TH.selectInstrumentSound}</h2>
-        <p className="text-sm text-textMuted mb-3">
+        <h2 className="text-xl font-semibold mb-3 text-teal-300 text-outline-black">{UI_TEXT_TH.selectInstrumentSound}</h2>
+        <p className="text-sm text-slate-100 text-outline-black mb-3">
             {UI_TEXT_TH.currentSoundLabel} <span className="font-semibold text-secondary-light">{getInstrumentSoundName(playerData.selectedInstrumentSoundId, UI_TEXT_TH)}</span>
         </p>
         {purchasedSounds.length > 0 ? (
@@ -70,13 +70,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
             ))}
           </div>
         ) : (
-          <p className="text-textMuted">คุณยังไม่มีเสียงเครื่องดนตรีอื่นให้เลือก ลองไปซื้อที่ร้านค้าดูสิ!</p>
+          <p className="text-slate-200 text-outline-black">คุณยังไม่มีเสียงเครื่องดนตรีอื่นให้เลือก ลองไปซื้อที่ร้านค้าดูสิ!</p>
         )}
       </div>
 
       {/* Game Data Management Section */}
       <div className="mt-8 pt-6 border-t border-borderDefault">
-        <h2 className="text-xl font-semibold mb-4 text-primary-light">จัดการข้อมูลเกม</h2>
+        <h2 className="text-xl font-semibold mb-4 text-teal-300 text-outline-black">จัดการข้อมูลเกม</h2>
         <div className="space-y-3.5">
           <button
             onClick={saveGameExplicitly}

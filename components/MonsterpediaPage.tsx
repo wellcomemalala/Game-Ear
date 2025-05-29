@@ -22,7 +22,7 @@ const MonsterpediaPage: React.FC<MonsterpediaPageProps> = ({
         <button onClick={onBackToMenu} className="btn-back">
           &larr; {UI_TEXT_TH.backToMenu}
         </button>
-        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-500 flex items-center">
+        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-500 flex items-center text-outline-black">
           <BookOpenIcon className="w-8 h-8 mr-3" />
           {UI_TEXT_TH.monsterpediaTitle}
         </h1>
@@ -30,7 +30,7 @@ const MonsterpediaPage: React.FC<MonsterpediaPageProps> = ({
       </div>
 
       {ALL_MONSTERS.length === 0 && (
-        <p className="text-center text-slate-400 py-8">ยังไม่มีข้อมูลอสูรในขณะนี้</p>
+        <p className="text-center text-slate-200 text-outline-black py-8">ยังไม่มีข้อมูลอสูรในขณะนี้</p>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[calc(100vh-220px)] overflow-y-auto app-custom-scrollbar pr-2">
@@ -52,23 +52,23 @@ const MonsterpediaPage: React.FC<MonsterpediaPageProps> = ({
               <div className="flex items-center mb-4">
                 <MonsterIconPlaceholder className={`w-16 h-16 mr-4 ${isDefeated ? 'text-emerald-400' : 'text-slate-500'}`} />
                 <div>
-                  <h2 className={`text-xl font-semibold ${isDefeated ? 'text-emerald-300' : 'text-slate-400'}`}>{monsterName}</h2>
-                  <p className="text-xs text-slate-300">{monsterDescription}</p>
+                  <h2 className={`text-xl font-semibold text-outline-black ${isDefeated ? 'text-emerald-300' : 'text-slate-200'}`}>{monsterName}</h2>
+                  <p className="text-xs text-slate-100 text-outline-black">{monsterDescription}</p>
                 </div>
               </div>
 
               {isDefeated && mementoDef && hasMemento ? (
                 <div className="mt-auto bg-slate-600/50 p-3 rounded-md">
-                  <h3 className="text-sm font-semibold text-amber-300 mb-1">ของที่ระลึก: {mementoName}</h3>
+                  <h3 className="text-sm font-semibold text-amber-300 text-outline-black mb-1">ของที่ระลึก: {mementoName}</h3>
                   <div className="flex items-center">
                     <MementoIconPlaceholder className="w-10 h-10 mr-3 text-amber-400" />
-                    <p className="text-xs text-slate-300">{mementoDescription}</p>
+                    <p className="text-xs text-slate-100 text-outline-black">{mementoDescription}</p>
                   </div>
                 </div>
               ) : (
                 <div className="mt-auto bg-slate-600/30 p-3 rounded-md text-center">
                   <LockClosedIcon className="w-8 h-8 mx-auto text-slate-500 mb-1" />
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-200 text-outline-black">
                     {isDefeated ? UI_TEXT_TH.noMementosCollected : "ยังไม่ได้พิชิต / ไม่มีข้อมูลของที่ระลึก"}
                   </p>
                 </div>
@@ -78,7 +78,7 @@ const MonsterpediaPage: React.FC<MonsterpediaPageProps> = ({
         })}
       </div>
        {ALL_MONSTERS.length > 0 && playerData.collectedMementos.length === 0 && (
-        <p className="text-center text-slate-500 mt-6">{UI_TEXT_TH.noMementosCollected}</p>
+        <p className="text-center text-slate-200 text-outline-black mt-6">{UI_TEXT_TH.noMementosCollected}</p>
       )}
     </div>
   );

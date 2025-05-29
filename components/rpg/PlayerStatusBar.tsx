@@ -74,7 +74,7 @@ const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({
                 <span className="font-semibold text-sky-300">{UI_TEXT_TH.playerLevel}:</span>
                 <span className="text-white font-bold"> {level}</span>
             </div>
-            <div className="text-slate-300 text-outline-black mt-0.5">
+            <div className="text-slate-100 text-outline-black mt-0.5">
               {UI_TEXT_TH.xp}: {currentXp} / {nextLevelXpTarget < currentXp && level >= LEVEL_THRESHOLDS.length ? currentXp : nextLevelXpTarget}
             </div>
             <div className="w-24 sm:w-32 md:w-40 h-2 sm:h-2.5 bg-slate-600 rounded-full overflow-hidden mt-1">

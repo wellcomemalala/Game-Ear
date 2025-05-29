@@ -261,7 +261,7 @@ const App: React.FC = () => {
         return (
           <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)]">
             <div className="bg-card p-8 md:p-12 rounded-xl shadow-2xl w-full max-w-md">
-              <h2 className="text-2xl font-semibold mb-6 text-textBase text-center">{UI_TEXT_TH.difficultyPrompt}</h2>
+              <h2 className="text-2xl font-bold mb-6 text-sky-200 text-center text-outline-black">{UI_TEXT_TH.difficultyPrompt}</h2>
               <div className="space-y-3.5">
                 <button onClick={() => handleDifficultySelect(Difficulty.EASY)} className="w-full btn-easy btn-lg">{UI_TEXT_TH.easy}</button>
                 <button onClick={() => handleDifficultySelect(Difficulty.MEDIUM)} className="w-full btn-medium btn-lg">{UI_TEXT_TH.medium}</button>

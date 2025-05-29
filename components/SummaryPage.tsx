@@ -32,14 +32,14 @@ const SummaryPage: React.FC<SummaryPageProps> = ({ playerData, allAchievements, 
   };
 
   const renderMasterySection = (
-    title: string, 
+    titleKey: keyof ThaiUIText, 
     items: (IntervalInfo | ChordInfo)[], 
     correctCounts: { [id: string]: number },
     itemType: GameMode
   ) => {
     return (
       <div className="bg-card-muted p-4 md:p-6 rounded-lg shadow-lg">
-        <h3 className="text-xl font-semibold mb-4 text-primary-light border-b border-borderMuted pb-2">{title}</h3>
+        <h3 className="text-xl font-semibold mb-4 text-teal-300 text-outline-black border-b border-borderMuted pb-2">{UI_TEXT_TH[titleKey]}</h3>
         {items.length === 0 && <p className="text-textMuted">ไม่มีข้อมูล</p>}
         <div className="space-y-3 max-h-80 overflow-y-auto pr-2 app-custom-scrollbar">
           {items.map(item => {
@@ -50,25 +50,25 @@ const SummaryPage: React.FC<SummaryPageProps> = ({ playerData, allAchievements, 
             const nextAchievement = itemMasteryAchievements.find(ach => !playerData.unlockedAchievementIds.includes(ach.id));
             
             return (
-              <div key={item.id} className={`p-3 rounded-md ${isItemUnlockedForTraining ? 'bg-slate-600/70' : 'bg-slate-600/30 opacity-75'}`}>
-                <p className={`font-semibold text-lg ${isItemUnlockedForTraining ? 'text-secondary-light' : 'text-textMuted'}`}>
+              <div key={item.id} className={`p-3 rounded-md ${isItemUnlockedForTraining ? 'bg-slate-600/70' : 'bg-slate-600/30'}`}> {/* Removed opacity-75 */}
+                <p className={`font-semibold text-lg ${isItemUnlockedForTraining ? 'text-secondary-light' : 'text-slate-300 text-outline-black'}`}>
                   {item.name} ({item.thaiName})
-                  {!isItemUnlockedForTraining && item.isAdvanced && <span className="text-xs text-accent-light ml-2">(ต้องปลดล็อก)</span>}
+                  {!isItemUnlockedForTraining && item.isAdvanced && <span className="text-xs text-accent-light ml-2 text-outline-black">(ต้องปลดล็อก)</span>}
                 </p>
                 {isItemUnlockedForTraining && (
                   <>
-                    <p className="text-sm text-slate-300">{UI_TEXT_TH.correctAnswersLabel} <span className="font-bold text-white">{count}</span></p>
+                    <p className="text-sm text-slate-100 text-outline-black">{UI_TEXT_TH.correctAnswersLabel} <span className="font-bold text-white">{count}</span></p>
                     {nextAchievement && nextAchievement.milestone && (
-                      <p className="text-sm text-warning-light">
+                      <p className="text-sm text-warning-light text-outline-black">
                         {UI_TEXT_TH.nextMilestoneLabel} {nextAchievement.milestone! - count > 0 ? `อีก ${nextAchievement.milestone! - count} ครั้ง` : ''} {UI_TEXT_TH.forAchievementText} '{UI_TEXT_TH[nextAchievement.nameKey]}'
                       </p>
                     )}
                     {!nextAchievement && itemMasteryAchievements.length > 0 && (
-                        <p className="text-sm text-success-light">{UI_TEXT_TH.allMasteryAchievementsUnlocked}</p>
+                        <p className="text-sm text-success-light text-outline-black">{UI_TEXT_TH.allMasteryAchievementsUnlocked}</p>
                     )}
                     {unlockedItemAchievements.length > 0 && (
-                      <div className="mt-1">
-                        <span className="text-xs text-slate-400">ความสำเร็จที่ได้: </span>
+                      <div className="mt-1 text-outline-black">
+                        <span className="text-xs text-slate-300">ความสำเร็จที่ได้: </span>
                         {unlockedItemAchievements.map(ach => UI_TEXT_TH[ach.nameKey]).join(', ')}
                       </div>
                     )}
@@ -91,7 +91,7 @@ const SummaryPage: React.FC<SummaryPageProps> = ({ playerData, allAchievements, 
     <div className="w-full max-w-3xl mx-auto bg-card p-5 md:p-7 rounded-xl shadow-2xl flex flex-col space-y-5">
       <div className="flex justify-between items-center pb-4 border-b border-borderDefault">
         <button onClick={onBackToMenu} className="btn-back">&larr; {UI_TEXT_TH.backToMenu}</button>
-        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-accent-light to-accent">
+        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-accent-light to-accent text-outline-black">
           {UI_TEXT_TH.summaryPageTitle}
         </h1>
         <div 
@@ -105,13 +105,13 @@ const SummaryPage: React.FC<SummaryPageProps> = ({ playerData, allAchievements, 
        {playerData.playerName && <h2 className="text-xl font-bold text-center text-sky-200 text-outline-black -mt-3">{UI_TEXT_TH.playerNameDisplayLabel} {playerData.playerName}</h2>}
 
       <div className="bg-card-muted p-4 md:p-6 rounded-lg shadow-lg">
-        <h2 className="text-xl font-semibold mb-3 text-primary-light">{UI_TEXT_TH.playerStats}</h2>
+        <h2 className="text-xl font-semibold mb-3 text-teal-300 text-outline-black">{UI_TEXT_TH.playerStats}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
-          <div className="bg-slate-600/70 p-3 rounded-md"><p className="text-textMuted text-sm">{UI_TEXT_TH.playerLevel}</p><p className="text-2xl font-bold text-secondary-light">{playerData.level}</p></div>
-          <div className="bg-slate-600/70 p-3 rounded-md"><p className="text-textMuted text-sm">{UI_TEXT_TH.xp}</p><p className="text-2xl font-bold text-success-light">{playerData.xp}</p></div>
-          <div className="bg-slate-600/70 p-3 rounded-md"><p className="text-textMuted text-sm">{UI_TEXT_TH.gCoins}</p><p className="text-2xl font-bold text-accent-light">{playerData.gCoins}</p></div>
+          <div className="bg-slate-600/70 p-3 rounded-md"><p className="text-slate-200 text-sm text-outline-black">{UI_TEXT_TH.playerLevel}</p><p className="text-2xl font-bold text-secondary-light text-outline-black">{playerData.level}</p></div>
+          <div className="bg-slate-600/70 p-3 rounded-md"><p className="text-slate-200 text-sm text-outline-black">{UI_TEXT_TH.xp}</p><p className="text-2xl font-bold text-success-light text-outline-black">{playerData.xp}</p></div>
+          <div className="bg-slate-600/70 p-3 rounded-md"><p className="text-slate-200 text-sm text-outline-black">{UI_TEXT_TH.gCoins}</p><p className="text-2xl font-bold text-accent-light text-outline-black">{playerData.gCoins}</p></div>
         </div>
-         <div className="mt-3 text-sm text-slate-300 space-y-0.5">
+         <div className="mt-3 text-sm text-slate-100 text-outline-black space-y-0.5">
             <p>{UI_TEXT_TH.totalCorrectAnswers} (ขั้นคู่): <span className="font-semibold text-white">{playerData.intervalQuestionsAnswered || 0}</span></p>
             <p>{UI_TEXT_TH.totalCorrectAnswers} (คอร์ด): <span className="font-semibold text-white">{playerData.chordQuestionsAnswered || 0}</span></p>
             <p>{UI_TEXT_TH.highScore} (Streak): <span className="font-semibold text-white">{playerData.highestStreak || 0}</span></p>
@@ -119,15 +119,15 @@ const SummaryPage: React.FC<SummaryPageProps> = ({ playerData, allAchievements, 
       </div>
 
       <div className="bg-card-muted p-4 md:p-6 rounded-lg shadow-lg">
-        <h2 className="text-xl font-semibold mb-3 text-primary-light">{UI_TEXT_TH.unlockedAchievements}</h2>
+        <h2 className="text-xl font-semibold mb-3 text-teal-300 text-outline-black">{UI_TEXT_TH.unlockedAchievements}</h2>
         {unlockedAchievements.length === 0 ? (
-          <p className="text-textMuted">{UI_TEXT_TH.noAchievementsUnlocked}</p>
+          <p className="text-slate-200 text-outline-black">{UI_TEXT_TH.noAchievementsUnlocked}</p>
         ) : (
           <ul className="space-y-2 max-h-52 overflow-y-auto pr-2 app-custom-scrollbar">
             {unlockedAchievements.map(ach => (
               <li key={ach.id} className="p-2.5 bg-slate-600/70 rounded-md shadow-sm">
-                <p className="font-medium text-secondary-light">{UI_TEXT_TH[ach.nameKey]}</p>
-                <p className="text-xs text-slate-300">{UI_TEXT_TH[ach.descriptionKey]}</p>
+                <p className="font-medium text-secondary-light text-outline-black">{UI_TEXT_TH[ach.nameKey]}</p>
+                <p className="text-xs text-slate-200 text-outline-black">{UI_TEXT_TH[ach.descriptionKey]}</p>
               </li>
             ))}
           </ul>
@@ -135,8 +135,8 @@ const SummaryPage: React.FC<SummaryPageProps> = ({ playerData, allAchievements, 
       </div>
       
       <div className="space-y-5">
-        {renderMasterySection(UI_TEXT_TH.intervalsMastery, ALL_INTERVALS, playerData.intervalCorrectCounts, GameMode.INTERVALS)}
-        {renderMasterySection(UI_TEXT_TH.chordsMastery, ALL_CHORDS, playerData.chordCorrectCounts, GameMode.CHORDS)}
+        {renderMasterySection('intervalsMastery', ALL_INTERVALS, playerData.intervalCorrectCounts, GameMode.INTERVALS)}
+        {renderMasterySection('chordsMastery', ALL_CHORDS, playerData.chordCorrectCounts, GameMode.CHORDS)}
       </div>
     </div>
   );

@@ -16,18 +16,18 @@ interface SectionProps {
 
 const Section: React.FC<SectionProps> = ({ titleKey, children, icon }) => (
   <div className="bg-slate-700/50 p-4 md:p-6 rounded-lg shadow-lg mb-6">
-    <h2 className="text-xl font-semibold mb-3 text-sky-300 flex items-center">
+    <h2 className="text-xl font-semibold mb-3 text-sky-300 text-outline-black flex items-center">
       {icon && <span className="mr-2 text-sky-400">{icon}</span>}
       {UI_TEXT_TH[titleKey]}
     </h2>
-    <div className="text-sm text-slate-200 space-y-2">{children}</div>
+    <div className="text-sm text-slate-100 text-outline-black space-y-2">{children}</div>
   </div>
 );
 
 const SubSection: React.FC<SectionProps> = ({ titleKey, children }) => (
   <div className="ml-0 md:ml-4 mt-3 mb-2">
-    <h3 className="text-md font-medium text-emerald-300 mb-1">{UI_TEXT_TH[titleKey]}</h3>
-    <div className="text-sm text-slate-300 space-y-1">{children}</div>
+    <h3 className="text-md font-medium text-emerald-300 text-outline-black mb-1">{UI_TEXT_TH[titleKey]}</h3>
+    <div className="text-sm text-slate-100 text-outline-black space-y-1">{children}</div>
   </div>
 );
 
@@ -39,7 +39,7 @@ const GameGuidePage: React.FC<GameGuidePageProps> = ({ onBackToMenu }) => {
         <button onClick={onBackToMenu} className="btn-back">
           &larr; {UI_TEXT_TH.backToMenu}
         </button>
-        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-green-500 flex items-center">
+        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-green-500 flex items-center text-outline-black">
           <BookOpenIcon className="w-8 h-8 mr-3" />
           {UI_TEXT_TH.gameGuideTitle}
         </h1>

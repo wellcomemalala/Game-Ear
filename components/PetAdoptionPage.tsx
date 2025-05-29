@@ -42,7 +42,7 @@ const PetAdoptionPage: React.FC<PetAdoptionPageProps> = ({
   if (availablePetsToAdopt.length === 0) {
     return (
       <div className="w-full max-w-md mx-auto bg-slate-800 p-8 rounded-xl shadow-2xl text-center">
-        <p>ไม่มีเพื่อนซี้ให้รับเลี้ยงในขณะนี้</p>
+        <p className="text-slate-100 text-outline-black">ไม่มีเพื่อนซี้ให้รับเลี้ยงในขณะนี้</p>
         <button onClick={onBackToMenu} className="mt-4 btn-secondary">
           {UI_TEXT_TH.backToMenu}
         </button>
@@ -54,7 +54,7 @@ const PetAdoptionPage: React.FC<PetAdoptionPageProps> = ({
     <div className="w-full max-w-2xl mx-auto bg-slate-800 p-6 md:p-10 rounded-xl shadow-2xl">
       <div className="flex justify-between items-center mb-8 pb-4 border-b border-slate-700">
         <button onClick={onBackToMenu} className="btn-back">&larr; {UI_TEXT_TH.backToMenu}</button>
-        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-500">
+        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-500 text-outline-black">
           {UI_TEXT_TH.petAdoptionCenterTitle}
         </h1>
         <div className="w-20"> {/* Spacer */} </div>
@@ -74,11 +74,11 @@ const PetAdoptionPage: React.FC<PetAdoptionPageProps> = ({
             <div key={petDef.id} className={`bg-slate-700 p-6 rounded-lg shadow-lg text-center flex flex-col justify-between ${isOwned ? 'opacity-60' : ''}`}>
               <div>
                 <PetIcon className="w-20 h-20 mx-auto mb-3 text-cyan-400" />
-                <h2 className="text-xl font-semibold text-emerald-300 mb-1">{petDisplayName}</h2>
-                <p className="text-xs text-slate-400 mb-3 h-10"> {/* Fixed height for description */}
+                <h2 className="text-xl font-semibold text-emerald-300 text-outline-black mb-1">{petDisplayName}</h2>
+                <p className="text-xs text-slate-100 text-outline-black mb-3 h-10"> {/* Fixed height for description */}
                   {UI_TEXT_TH[petDef.descriptionKey] || "เพื่อนซี้สุดน่ารัก"}
                 </p>
-                <div className="flex items-center justify-center text-amber-400 font-semibold text-md mb-4">
+                <div className="flex items-center justify-center text-amber-400 font-semibold text-md mb-4 text-outline-black">
                   <CoinIcon className="w-5 h-5 mr-1.5" /> {petDef.cost} G-Coins
                 </div>
               </div>
@@ -106,7 +106,7 @@ const PetAdoptionPage: React.FC<PetAdoptionPageProps> = ({
         })}
       </div>
        {availablePetsToAdopt.every(p => playerData.ownedPetIds.includes(p.id)) && (
-        <p className="text-center text-slate-400 mt-6">คุณรับเลี้ยงเพื่อนซี้ทุกตัวแล้ว!</p>
+        <p className="text-center text-slate-200 text-outline-black mt-6">คุณรับเลี้ยงเพื่อนซี้ทุกตัวแล้ว!</p>
       )}
     </div>
   );

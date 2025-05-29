@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ScoreDisplay from './ScoreDisplay';
 import { UI_TEXT_TH } from '../constants';
@@ -55,13 +56,13 @@ const GameContainer: React.FC<GameContainerProps> = ({
           >
             &larr; {UI_TEXT_TH.backToMenu}
           </button>
-          <h2 className="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-secondary-light text-center px-2">{title}</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-secondary-light text-center px-2 text-outline-black">{title}</h2>
           <ScoreDisplay score={score} totalQuestions={totalQuestions} />
         </div>
-        <div className="flex flex-wrap justify-between items-center text-xs sm:text-sm text-textMuted px-1 gap-x-2 gap-y-1">
-          <span>{UI_TEXT_TH.difficulty}: <span className="font-semibold text-textBase">{difficultyText}</span></span>
-          <span>{UI_TEXT_TH.highScore}: <span className="font-semibold text-textBase">{highScore}</span></span>
-          <span>{UI_TEXT_TH.currentStreak}: <span className="font-semibold text-textBase">{currentStreak}</span></span>
+        <div className="flex flex-wrap justify-between items-center text-xs sm:text-sm text-sky-200 text-outline-black px-1 gap-x-2 gap-y-1">
+          <span>{UI_TEXT_TH.difficulty}: <span className="font-semibold text-white">{difficultyText}</span></span>
+          <span>{UI_TEXT_TH.highScore}: <span className="font-semibold text-white">{highScore}</span></span>
+          <span>{UI_TEXT_TH.currentStreak}: <span className="font-semibold text-white">{currentStreak}</span></span>
         </div>
       </div>
 
@@ -79,8 +80,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
         </div>
         
         <div className="w-full max-w-md">
-            {!isSoundPlayed && <p className="text-center text-textMuted mb-2 text-sm">{UI_TEXT_TH.playPrompt}</p>}
-            <p className="text-center text-textBase mb-3">{UI_TEXT_TH.selectAnswer}</p>
+            {!isSoundPlayed && <p className="text-center text-slate-300 text-outline-black mb-2 text-sm">{UI_TEXT_TH.playPrompt}</p>}
+            <p className="text-center text-white font-bold text-outline-black mb-3">{UI_TEXT_TH.selectAnswer}</p>
             <div className={`grid grid-cols-1 ${ children && React.Children.count(children) > 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-1'} gap-3 md:gap-4`}>
               {children}
             </div>

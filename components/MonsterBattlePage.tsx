@@ -194,13 +194,13 @@ const MonsterBattlePage: React.FC<MonsterBattlePageProps> = ({
       <div className="pb-4 border-b border-slate-700">
         <div className="flex justify-between items-center mb-2">
            <MonsterIconPlaceholder className="w-10 h-10 text-orange-400"/>
-          <h2 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-400 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-400 text-center text-outline-black">
             {UI_TEXT_TH.monsterBattleTitle}: {monsterName}
           </h2>
           <div className="w-10 h-10"></div> {/* Spacer */}
         </div>
         {!battleOutcome && (
-            <p className="text-center text-slate-300 text-sm">
+            <p className="text-center text-slate-100 text-outline-black text-sm">
                 {UI_TEXT_TH.monsterBattleStageLabel.replace('{current}', (currentStageIndex + 1).toString()).replace('{total}', monsterDef.stages.length.toString())}
             </p>
         )}
@@ -208,8 +208,8 @@ const MonsterBattlePage: React.FC<MonsterBattlePageProps> = ({
 
     {battleOutcome === 'victory' && (
         <div className="flex-grow flex flex-col items-center justify-center space-y-4 text-center">
-            <h3 className="text-3xl font-bold text-green-400">{UI_TEXT_TH.monsterBattleVictoryMessage}</h3>
-            <p className="text-slate-200">
+            <h3 className="text-3xl font-bold text-green-400 text-outline-black">{UI_TEXT_TH.monsterBattleVictoryMessage}</h3>
+            <p className="text-slate-100 text-outline-black">
                 {UI_TEXT_TH.monsterBattleRewardMessage
                     .replace('{mementoName}', UI_TEXT_TH[ALL_MEMENTOS.find(m => m.id === monsterDef.rewardMementoId)?.nameKey || '' as keyof ThaiUIText])
                     .replace('{gcoins}', (monsterDef.rewardGcoins || 0).toString())
@@ -223,8 +223,8 @@ const MonsterBattlePage: React.FC<MonsterBattlePageProps> = ({
 
     {battleOutcome === 'defeat' && (
         <div className="flex-grow flex flex-col items-center justify-center space-y-4 text-center">
-            <h3 className="text-3xl font-bold text-red-400">{UI_TEXT_TH.monsterBattleDefeatMessage}</h3>
-            {correctAnswerText && <p className="text-slate-300">{UI_TEXT_TH.correctAnswerIs} {correctAnswerText}</p>}
+            <h3 className="text-3xl font-bold text-red-400 text-outline-black">{UI_TEXT_TH.monsterBattleDefeatMessage}</h3>
+            {correctAnswerText && <p className="text-slate-100 text-outline-black">{UI_TEXT_TH.correctAnswerIs} {correctAnswerText}</p>}
             <button onClick={handleNextAction} className="btn-secondary mt-4 px-8 py-3 text-lg">
                 {UI_TEXT_TH.backToMenu} {/* Or "Try Again" / "To Monster Lair" */}
             </button>
@@ -244,8 +244,8 @@ const MonsterBattlePage: React.FC<MonsterBattlePageProps> = ({
                 <PianoKeyboard highlightedNotes={highlightedNotes} />
             </div>
             <div className="w-full max-w-md">
-              {!isSoundPlayed && <p className="text-center text-slate-400 mb-2 text-sm">{UI_TEXT_TH.playPrompt}</p>}
-               <p className="text-center text-slate-300 mb-4">{UI_TEXT_TH.selectAnswer}</p>
+              {!isSoundPlayed && <p className="text-center text-slate-200 text-outline-black mb-2 text-sm">{UI_TEXT_TH.playPrompt}</p>}
+               <p className="text-center text-slate-100 text-outline-black mb-4">{UI_TEXT_TH.selectAnswer}</p>
               <div className={`grid grid-cols-1 ${currentQuestion.options.length > 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-1'} gap-3 md:gap-4`}>
                 {currentQuestion.options.map(option => (
                   <OptionButton

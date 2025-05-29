@@ -59,7 +59,7 @@ const UnlockablesStore: React.FC<UnlockablesStoreProps> = ({
 
     return (
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-sky-300 border-b border-slate-600 pb-2">{title}</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-sky-300 text-outline-black border-b border-slate-600 pb-2">{title}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {advancedItems.map(item => {
             const isUnlocked = isMusicalItemUnlocked(item.id, itemType);
@@ -70,8 +70,8 @@ const UnlockablesStore: React.FC<UnlockablesStoreProps> = ({
             return (
               <div key={item.id} className="bg-slate-700 p-4 rounded-lg shadow-md flex flex-col justify-between">
                 <div>
-                  <h3 className="text-xl font-medium text-emerald-300 mb-1">{item.name}</h3>
-                  <p className="text-sm text-slate-400 mb-2">{item.thaiName}</p>
+                  <h3 className="text-xl font-medium text-emerald-300 text-outline-black mb-1">{item.name}</h3>
+                  <p className="text-sm text-slate-200 text-outline-black mb-2">{item.thaiName}</p>
                 </div>
                 <div className="flex items-center justify-between mt-3">
                   {isUnlocked ? (
@@ -80,9 +80,9 @@ const UnlockablesStore: React.FC<UnlockablesStoreProps> = ({
                     </span>
                   ) : (
                     <>
-                      <span className="text-amber-400 font-semibold flex items-center">
+                      <span className="text-amber-400 font-semibold flex items-center text-outline-black">
                          <CoinIcon className="w-5 h-5 mr-1" /> {finalCost}
-                         {hasDiscount && <span className="text-xs text-slate-400 line-through ml-1.5">({originalCost})</span>}
+                         {hasDiscount && <span className="text-xs text-slate-300 line-through ml-1.5">({originalCost})</span>}
                       </span>
                       <button
                         onClick={() => handleUnlock(item, itemType)}
@@ -106,7 +106,7 @@ const UnlockablesStore: React.FC<UnlockablesStoreProps> = ({
     <div className="w-full max-w-4xl mx-auto bg-slate-800 p-6 md:p-8 rounded-xl shadow-2xl">
       <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-700">
         <button onClick={onBackToMenu} className="btn-back">&larr; {UI_TEXT_TH.backToMenu}</button>
-        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 text-outline-black">
           {UI_TEXT_TH.unlockablesStoreTitle}
         </h1>
         <div className="w-20"> {/* Spacer */} </div>
@@ -122,7 +122,7 @@ const UnlockablesStore: React.FC<UnlockablesStoreProps> = ({
       {renderUnlockableSection(UI_TEXT_TH.chordsMastery, ALL_CHORDS, UnlockedItemType.CHORD)}
 
       {ALL_INTERVALS.filter(i => i.isAdvanced).length === 0 && ALL_CHORDS.filter(c => c.isAdvanced).length === 0 && (
-          <p className="text-center text-slate-400 mt-8">ไม่มีเนื้อหาให้ปลดล็อกในขณะนี้</p>
+          <p className="text-center text-slate-200 text-outline-black mt-8">ไม่มีเนื้อหาให้ปลดล็อกในขณะนี้</p>
       )}
     </div>
   );

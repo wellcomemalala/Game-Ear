@@ -23,7 +23,7 @@ const MonsterLairPage: React.FC<MonsterLairPageProps> = ({
         <button onClick={onBackToMenu} className="btn-back">
           &larr; {UI_TEXT_TH.backToMenu}
         </button>
-        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500 flex items-center">
+        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500 flex items-center text-outline-black">
           <LairIcon className="w-8 h-8 mr-3" />
           {UI_TEXT_TH.monsterLairTitle}
         </h1>
@@ -31,7 +31,7 @@ const MonsterLairPage: React.FC<MonsterLairPageProps> = ({
       </div>
 
       {ALL_MONSTERS.length === 0 && (
-        <p className="text-center text-slate-400 py-8">ยังไม่มีอสูรให้ท้าทายในขณะนี้</p>
+        <p className="text-center text-slate-200 text-outline-black py-8">ยังไม่มีอสูรให้ท้าทายในขณะนี้</p>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -46,8 +46,8 @@ const MonsterLairPage: React.FC<MonsterLairPageProps> = ({
               className={`bg-slate-700/80 p-5 rounded-lg shadow-xl flex flex-col items-center text-center transition-all duration-300 ease-in-out transform hover:scale-105 ${isDefeated ? 'border-2 border-green-600/70' : 'border-2 border-slate-600 hover:border-orange-500/70'}`}
             >
               <MonsterIconPlaceholder className="w-24 h-24 text-orange-400 mb-4" />
-              <h2 className="text-xl font-semibold text-orange-300 mb-1">{monsterName}</h2>
-              <p className="text-xs text-slate-300 mb-3 min-h-[40px]">{monsterDescription}</p>
+              <h2 className="text-xl font-semibold text-orange-300 text-outline-black mb-1">{monsterName}</h2>
+              <p className="text-xs text-slate-100 text-outline-black mb-3 min-h-[40px]">{monsterDescription}</p>
               
               {isDefeated ? (
                 <div className="mt-auto w-full">

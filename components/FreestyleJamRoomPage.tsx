@@ -51,17 +51,17 @@ const FreestyleJamRoomPage: React.FC<FreestyleJamRoomPageProps> = ({
     <div className="w-full max-w-3xl mx-auto bg-slate-800 p-6 md:p-8 rounded-xl shadow-2xl text-slate-100 flex flex-col">
       <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-700">
         <button onClick={onBackToMenu} className="btn-back">&larr; {UI_TEXT_TH.backToMenu}</button>
-        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 flex items-center">
+        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 flex items-center text-outline-black">
           <MusicNotesIcon className="w-8 h-8 mr-3" />
           {UI_TEXT_TH.freestyleJamRoomTitle}
         </h1>
         <div className="w-20"> {/* Spacer */} </div>
       </div>
 
-      <p className="text-center text-slate-300 mb-6">{UI_TEXT_TH.freestyleJamRoomDescription}</p>
+      <p className="text-center text-slate-100 text-outline-black mb-6">{UI_TEXT_TH.freestyleJamRoomDescription}</p>
 
       <div className="mb-6 p-4 bg-slate-700/50 rounded-lg">
-        <label htmlFor="instrument-select" className="block text-sm font-medium text-sky-300 mb-1">
+        <label htmlFor="instrument-select" className="block text-sm font-medium text-sky-300 mb-1 text-outline-black">
           {UI_TEXT_TH.selectSoundLabel}
         </label>
         <select
