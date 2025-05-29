@@ -27,7 +27,7 @@ const PlayerNameInputPage: React.FC<PlayerNameInputPageProps> = ({ setPlayerName
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-slate-100 p-4">
       <form onSubmit={handleSubmit} className="bg-slate-800 p-8 rounded-xl shadow-2xl w-full max-w-md">
-        <h1 className="text-3xl font-bold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-400">
+        <h1 className="text-3xl font-bold mb-6 text-center text-sky-300 text-outline-black">
           {UI_TEXT_TH.playerNameInputTitle}
         </h1>
         <p className="mb-4 text-slate-300 text-center">{UI_TEXT_TH.enterPlayerNamePrompt}</p>

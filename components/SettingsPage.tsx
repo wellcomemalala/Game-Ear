@@ -37,7 +37,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
     <div className="w-full max-w-xl mx-auto bg-card p-6 md:p-8 rounded-xl shadow-2xl">
       <div className="flex justify-between items-center mb-8 pb-4 border-b border-borderDefault">
         <button onClick={onBackToMenu} className="btn-back">&larr; {UI_TEXT_TH.backToMenu}</button>
-        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-info-light to-info flex items-center text-outline-black">
+        <h1 className="text-2xl md:text-3xl font-bold text-sky-300 flex items-center text-outline-black">
           <CogIcon className="w-8 h-8 mr-3" />
           {UI_TEXT_TH.settingsTitle}
         </h1>

@@ -56,7 +56,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
           >
             &larr; {UI_TEXT_TH.backToMenu}
           </button>
-          <h2 className="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-secondary-light text-center px-2 text-outline-black">{title}</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-sky-300 text-center px-2 text-outline-black">{title}</h2>
           <ScoreDisplay score={score} totalQuestions={totalQuestions} />
         </div>
         <div className="flex flex-wrap justify-between items-center text-xs sm:text-sm text-sky-200 text-outline-black px-1 gap-x-2 gap-y-1">

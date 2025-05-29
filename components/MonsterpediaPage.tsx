@@ -22,7 +22,7 @@ const MonsterpediaPage: React.FC<MonsterpediaPageProps> = ({
         <button onClick={onBackToMenu} className="btn-back">
           &larr; {UI_TEXT_TH.backToMenu}
         </button>
-        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-500 flex items-center text-outline-black">
+        <h1 className="text-2xl md:text-3xl font-bold text-sky-300 flex items-center text-outline-black">
           <BookOpenIcon className="w-8 h-8 mr-3" />
           {UI_TEXT_TH.monsterpediaTitle}
         </h1>

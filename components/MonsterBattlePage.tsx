@@ -194,7 +194,7 @@ const MonsterBattlePage: React.FC<MonsterBattlePageProps> = ({
       <div className="pb-4 border-b border-slate-700">
         <div className="flex justify-between items-center mb-2">
            <MonsterIconPlaceholder className="w-10 h-10 text-orange-400"/>
-          <h2 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-400 text-center text-outline-black">
+          <h2 className="text-2xl md:text-3xl font-bold text-sky-300 text-center text-outline-black">
             {UI_TEXT_TH.monsterBattleTitle}: {monsterName}
           </h2>
           <div className="w-10 h-10"></div> {/* Spacer */}

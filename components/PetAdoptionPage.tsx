@@ -54,7 +54,7 @@ const PetAdoptionPage: React.FC<PetAdoptionPageProps> = ({
     <div className="w-full max-w-2xl mx-auto bg-slate-800 p-6 md:p-10 rounded-xl shadow-2xl">
       <div className="flex justify-between items-center mb-8 pb-4 border-b border-slate-700">
         <button onClick={onBackToMenu} className="btn-back">&larr; {UI_TEXT_TH.backToMenu}</button>
-        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-500 text-outline-black">
+        <h1 className="text-2xl md:text-3xl font-bold text-sky-300 text-outline-black">
           {UI_TEXT_TH.petAdoptionCenterTitle}
         </h1>
         <div className="w-20"> {/* Spacer */} </div>

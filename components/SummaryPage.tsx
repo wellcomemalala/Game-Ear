@@ -91,7 +91,7 @@ const SummaryPage: React.FC<SummaryPageProps> = ({ playerData, allAchievements, 
     <div className="w-full max-w-3xl mx-auto bg-card p-5 md:p-7 rounded-xl shadow-2xl flex flex-col space-y-5">
       <div className="flex justify-between items-center pb-4 border-b border-borderDefault">
         <button onClick={onBackToMenu} className="btn-back">&larr; {UI_TEXT_TH.backToMenu}</button>
-        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-accent-light to-accent text-outline-black">
+        <h1 className="text-2xl md:text-3xl font-bold text-sky-300 text-outline-black">
           {UI_TEXT_TH.summaryPageTitle}
         </h1>
         <div 

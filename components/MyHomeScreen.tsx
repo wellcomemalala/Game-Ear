@@ -142,7 +142,7 @@ const MyHomeScreen: React.FC<MyHomeScreenProps> = ({
     <div className="w-full max-w-2xl mx-auto bg-slate-800 p-6 md:p-8 rounded-xl shadow-2xl flex flex-col text-slate-100">
       <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-700">
         <button onClick={onBackToMenu} className="btn-back">&larr; {UI_TEXT_TH.backToMenu}</button>
-        <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-lime-500 flex items-center text-outline-black">
+        <h1 className="text-2xl md:text-3xl font-bold text-sky-300 flex items-center text-outline-black">
           <HomeIcon className="w-8 h-8 mr-3" />
           {UI_TEXT_TH.myHomeScreenTitle}
         </h1>

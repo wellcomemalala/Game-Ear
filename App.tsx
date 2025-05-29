@@ -185,7 +185,7 @@ const App: React.FC = () => {
         return (
           <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-slate-100 p-4">
             <div className="bg-card p-8 rounded-xl shadow-2xl text-center max-w-md">
-              <h1 className="text-4xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-secondary-light">{UI_TEXT_TH.appName}</h1>
+              <h1 className="text-4xl font-bold mb-8 text-sky-300 text-outline-black">{UI_TEXT_TH.appName}</h1>
               <p className="mb-6 text-textMuted">{UI_TEXT_TH.audioContextPrompt}</p>
               <button onClick={initializeAudio} className="btn btn-primary btn-lg w-full">
                 {UI_TEXT_TH.start}
@@ -202,8 +202,8 @@ const App: React.FC = () => {
         return (
           <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] py-4">
             <div className="bg-card p-6 md:p-10 rounded-xl shadow-2xl w-full max-w-md">
-              <h1 className="text-4xl font-bold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-secondary-light">{UI_TEXT_TH.appName}</h1>
-              <h2 className="text-2xl font-bold mb-6 text-sky-200 text-center text-outline-black">{UI_TEXT_TH.chooseMode}</h2>
+              <h1 className="text-4xl font-bold mb-6 text-center text-sky-300 text-outline-black">{UI_TEXT_TH.appName}</h1>
+              <h2 className="text-2xl font-bold mb-6 text-sky-300 text-center text-outline-black">{UI_TEXT_TH.chooseMode}</h2>
               <div className="space-y-3.5">
                 {/* Core Gameplay & Challenge */}
                 <button onClick={() => handleModeSelect(GameMode.INTERVALS)} className="w-full btn-primary btn-lg">{UI_TEXT_TH.intervalTraining}</button>
@@ -261,7 +261,7 @@ const App: React.FC = () => {
         return (
           <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)]">
             <div className="bg-card p-8 md:p-12 rounded-xl shadow-2xl w-full max-w-md">
-              <h2 className="text-2xl font-bold mb-6 text-sky-200 text-center text-outline-black">{UI_TEXT_TH.difficultyPrompt}</h2>
+              <h2 className="text-2xl font-bold mb-6 text-sky-300 text-center text-outline-black">{UI_TEXT_TH.difficultyPrompt}</h2>
               <div className="space-y-3.5">
                 <button onClick={() => handleDifficultySelect(Difficulty.EASY)} className="w-full btn-easy btn-lg">{UI_TEXT_TH.easy}</button>
                 <button onClick={() => handleDifficultySelect(Difficulty.MEDIUM)} className="w-full btn-medium btn-lg">{UI_TEXT_TH.medium}</button>
