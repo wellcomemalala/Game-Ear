@@ -102,7 +102,7 @@ const SummaryPage: React.FC<SummaryPageProps> = ({ playerData, allAchievements, 
            {avatarInitial}
         </div>
       </div>
-       {playerData.playerName && <h2 className="text-xl font-semibold text-center text-textBase -mt-3">{UI_TEXT_TH.playerNameDisplayLabel} {playerData.playerName}</h2>}
+       {playerData.playerName && <h2 className="text-xl font-bold text-center text-sky-200 text-outline-black -mt-3">{UI_TEXT_TH.playerNameDisplayLabel} {playerData.playerName}</h2>}
 
       <div className="bg-card-muted p-4 md:p-6 rounded-lg shadow-lg">
         <h2 className="text-xl font-semibold mb-3 text-primary-light">{UI_TEXT_TH.playerStats}</h2>
