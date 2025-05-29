@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { UI_TEXT_TH, LEVEL_THRESHOLDS, PET_DEFINITIONS, getPetName } from '../../constants';
 import { PlayerData, PetAbilityType } from '../../types';
@@ -75,9 +74,9 @@ const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({
             {avatarInitial}
           </div>
           <div>
-            {playerName && <div className="text-slate-50 font-semibold text-sm sm:text-md truncate max-w-[90px] sm:max-w-[120px]" title={playerName}>{playerName}</div>}
+            {playerName && <div className="text-white font-semibold text-sm sm:text-md truncate max-w-[90px] sm:max-w-[120px]" title={playerName}>{playerName}</div>}
             <div className="text-xs text-primary-light">
-              {UI_TEXT_TH.playerLevel}: <span className="font-bold text-slate-200">{level}</span>
+              {UI_TEXT_TH.playerLevel}: <span className="font-bold text-white">{level}</span>
             </div>
           </div>
           <div className="w-20 sm:w-28 md:w-32">
@@ -114,7 +113,7 @@ const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({
 
         {/* G-Coins (aligns right) */}
         <div className="text-xs sm:text-sm font-semibold text-accent order-2 sm:order-3 ml-auto sm:ml-0">
-          {UI_TEXT_TH.gCoins}: <span className="text-lg text-slate-50">{gCoins}</span>
+          {UI_TEXT_TH.gCoins}: <span className="text-lg text-white">{gCoins}</span>
         </div>
       </div>
     </div>
