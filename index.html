@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เกมฝึกทักษะการฟังเสียงดนตรี</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Sarabun', 'sans-serif'],
+          },
+          colors: {
+            primary: { 
+              light: '#60A5FA', // Blue-400
+              DEFAULT: '#3B82F6', // Blue-500
+              dark: '#2563EB', // Blue-600
+            },
+            secondary: {
+              light: '#34D399', // Emerald-400
+              DEFAULT: '#10B981', // Emerald-500
+              dark: '#059669', // Emerald-600
+            },
+            accent: {
+              light: '#FBBF24', // Amber-400
+              DEFAULT: '#F59E0B', // Amber-500
+              dark: '#D97706', // Amber-600
+            },
+            destructive: {
+              light: '#F87171', // Red-400
+              DEFAULT: '#EF4444', // Red-500
+              dark: '#DC2626', // Red-600
+            },
+            success: {
+              light: '#4ADE80', // Green-400
+              DEFAULT: '#22C55E', // Green-500
+              dark: '#16A34A', // Green-600
+            },
+            warning: {
+              light: '#FCD34D', // Amber-300
+              DEFAULT: '#FACC15', // Yellow-400
+              dark: '#EAB308', // Yellow-500
+            },
+            info: {
+              light: '#38BDF8', // Sky-400
+              DEFAULT: '#0EA5E9', // Sky-500
+              dark: '#0284C7', // Sky-600
+            },
+            // Keeping slate for backgrounds and general text
+            background: 'slate.900',
+            card: 'slate.800',
+            'card-muted': 'rgba(45, 55, 72, 0.5)', // slate-700 with opacity for slight transparency
+            textBase: 'slate.100',
+            textMuted: 'slate.400',
+            borderDefault: 'slate.700',
+            borderMuted: 'slate.600',
+            
+            // Specific use cases from previous config, mapped or kept
+            correct: '#22C55E', // Green-500 (same as success.DEFAULT)
+            incorrect: '#EF4444', // Red-500 (same as destructive.DEFAULT)
+          }
+        }
+      }
+    }
+  </script>
+<style type="text/tailwindcss">
+    @layer base {
+      body {
+        @apply bg-gradient-to-br from-slate-900 to-slate-800 text-textBase min-h-screen flex flex-col font-sans overflow-x-hidden;
+      }
+      /* Root div will be flex-grow to take available space below status bar */
+      #root {
+        @apply flex-grow flex flex-col;
+      }
+    }
+
+    @layer components {
+      /* Button base styles */
+      .btn {
+        @apply py-2.5 px-5 rounded-lg font-semibold shadow-md transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 transform active:scale-95 flex items-center justify-center space-x-2;
+      }
+      .btn-lg {
+        @apply py-3 px-6 text-lg;
+      }
+      .btn-sm {
+        @apply py-1.5 px-3 text-sm;
+      }
+
+      /* Primary Button */
+      .btn-primary {
+        @apply btn bg-primary text-white hover:bg-primary-dark focus:ring-primary;
+      }
+      /* Secondary Button */
+      .btn-secondary {
+        @apply btn bg-secondary text-white hover:bg-secondary-dark focus:ring-secondary;
+      }
+      /* Accent Button */
+      .btn-accent {
+        @apply btn bg-accent text-white hover:bg-accent-dark focus:ring-accent;
+      }
+      /* Destructive Button */
+      .btn-destructive {
+        @apply btn bg-destructive text-white hover:bg-destructive-dark focus:ring-destructive;
+      }
+      /* Info Button */
+      .btn-info {
+        @apply btn bg-info text-white hover:bg-info-dark focus:ring-info;
+      }
+      /* Success Button */
+      .btn-success {
+        @apply btn bg-success text-white hover:bg-success-dark focus:ring-success;
+      }
+      /* Neutral/Default Button */
+      .btn-neutral {
+        @apply btn bg-slate-600 text-slate-100 hover:bg-slate-500 focus:ring-slate-400;
+      }
+      /* Outline Button */
+      .btn-outline-primary {
+          @apply btn border-2 border-primary text-primary hover:bg-primary hover:text-white focus:ring-primary;
+      }
+      /* Special Difficulty Buttons */
+      .btn-easy {
+          @apply btn bg-success text-white hover:bg-success-dark focus:ring-success-light;
+      }
+      .btn-medium {
+          @apply btn bg-warning text-slate-800 hover:bg-warning-dark focus:ring-warning-light;
+      }
+      .btn-hard {
+          @apply btn bg-destructive text-white hover:bg-destructive-dark focus:ring-destructive-light;
+      }
+      /* Back Button specific style for consistency */
+      .btn-back {
+          @apply btn btn-sm bg-slate-600 text-slate-200 hover:bg-slate-500 focus:ring-slate-400;
+      }
+       /* Settings Button */
+      .btn-settings {
+          @apply btn-neutral;
+      }
+
+      /* Custom Scrollbar */
+      .app-custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      .app-custom-scrollbar::-webkit-scrollbar-track {
+        @apply bg-slate-700 rounded-full;
+      }
+      .app-custom-scrollbar::-webkit-scrollbar-thumb {
+        @apply bg-slate-500 rounded-full hover:bg-slate-400;
+      }
+      .app-custom-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: theme('colors.slate.500') theme('colors.slate.700');
+      }
+    }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/"
+  }
+}
+</script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html><link rel="stylesheet" href="index.css">
+<script src="index.tsx" type="module"></script>
