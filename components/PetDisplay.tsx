@@ -5,7 +5,7 @@ import { UI_TEXT_TH, MAX_PET_HUNGER, PET_LEVEL_THRESHOLDS, MAX_PET_HAPPINESS, PE
 import { PetIcon } from './icons/PetIcon';
 import { FoodBowlIcon } from './icons/FoodBowlIcon';
 import { HandSparklesIcon } from './icons/HandSparklesIcon';
-import { SparklesIcon } from './icons/SparklesIcon'; // For special requests
+import { SparklesIcon } from './icons/SparklesIcon';
 
 interface PetDisplayProps {
   pet: ActivePet;
@@ -27,7 +27,7 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ pet, petFoodCount, onFeedPet, o
   const petXpProgressPercent = petXpNeededForNextLevel > 0 ? Math.min((petXpIntoCurrentLevel / petXpNeededForNextLevel) * 100, 100) : (pet.level >= PET_LEVEL_THRESHOLDS.length ? 100 : 0);
 
   const happinessPercentage = (pet.happiness / MAX_PET_HAPPINESS) * 100;
-  let happinessEmoji = '😊'; // Happy
+  let happinessEmoji = '😊';
   let happinessColor = 'text-green-400';
   if (happinessPercentage < 70) { happinessEmoji = '🙂'; happinessColor = 'text-yellow-400';}
   if (happinessPercentage < 40) { happinessEmoji = '😟'; happinessColor = 'text-orange-400';}
@@ -55,10 +55,10 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ pet, petFoodCount, onFeedPet, o
       />
       <div className="flex-grow">
         <div className="flex items-baseline space-x-1.5">
-            <span className="text-[11px] sm:text-xs font-semibold text-slate-100 truncate max-w-[60px] sm:max-w-[80px]" title={pet.name}>{pet.name}</span>
-            <span className={`text-xs sm:text-sm font-bold ${happinessColor}`} title={`${UI_TEXT_TH.petHappinessLabel} ${Math.round(pet.happiness)}%`}>{happinessEmoji}</span>
+            <span className="text-[11px] sm:text-xs font-semibold text-slate-100 text-shadow truncate max-w-[60px] sm:max-w-[80px]" title={pet.name}>{pet.name}</span>
+            <span className={`text-xs sm:text-sm font-bold ${happinessColor} text-shadow`} title={`${UI_TEXT_TH.petHappinessLabel} ${Math.round(pet.happiness)}%`}>{happinessEmoji}</span>
         </div>
-         <div className="text-[9px] sm:text-[10px] text-slate-300 -mt-0.5">
+         <div className="text-[9px] sm:text-[10px] text-slate-200 text-shadow -mt-0.5">
             {UI_TEXT_TH.petLevelLabel} {pet.level}
         </div>
         <div className="w-12 sm:w-16 h-1 bg-slate-600 rounded-full overflow-hidden mt-0.5" title={`${UI_TEXT_TH.petXpLabel} ${pet.xp}/${nextPetLevelXpTarget}`}>
@@ -96,7 +96,7 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ pet, petFoodCount, onFeedPet, o
         </button>
       </div>
       {specialRequestText && (
-        <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-max max-w-[150px] sm:max-w-xs bg-yellow-500 text-black text-[10px] sm:text-xs px-2 py-0.5 rounded-md shadow-lg z-10 flex items-center animate-pulse" title={specialRequestText}>
+        <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-max max-w-[150px] sm:max-w-xs bg-yellow-500 text-black text-[10px] sm:text-xs px-2 py-0.5 rounded-md shadow-lg z-10 flex items-center animate-pulse text-shadow" title={specialRequestText}>
             <SparklesIcon className="w-3 h-3 mr-1 flex-shrink-0"/>
             <span className="truncate">{specialRequestText}</span>
         </div>

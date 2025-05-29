@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { UI_TEXT_TH, LEVEL_THRESHOLDS, PET_DEFINITIONS, getPetName } from '../../constants';
+import { UI_TEXT_TH, LEVEL_THRESHOLDS, PET_DEFINITIONS } from '../../constants';
 import { PlayerData, PetAbilityType } from '../../types';
 import PetDisplay from '../PetDisplay';
-import { SparklesIcon } from '../icons/SparklesIcon'; 
+import { SparklesIcon } from '../icons/SparklesIcon';
 
 interface PlayerStatusBarProps {
   playerData: PlayerData;
@@ -13,16 +13,15 @@ interface PlayerStatusBarProps {
 }
 
 const generateColorFromSeed = (seed: string | undefined | null) => {
-  if (!seed || seed.length === 0) return '#718096'; // slate-500
+  if (!seed) return '#888888';
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     hash = seed.charCodeAt(i) + ((hash << 5) - hash);
     hash = hash & hash;
   }
-  const hue = hash % 360;
-  return `hsl(${hue}, 60%, 55%)`; // Keep saturation and lightness consistent for a cohesive look
+  const color = (hash & 0x00FFFFFF).toString(16).toUpperCase();
+  return '#' + '00000'.substring(0, 6 - color.length) + color;
 };
-
 
 const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({
     playerData,
@@ -36,13 +35,11 @@ const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({
 
   const xpIntoCurrentLevel = currentXp - currentLevelXpStart;
   const xpNeededForNextLevel = nextLevelXpTarget - currentLevelXpStart;
-
   const xpProgressPercent = xpNeededForNextLevel > 0 ? Math.min((xpIntoCurrentLevel / xpNeededForNextLevel) * 100, 100) : (level >= LEVEL_THRESHOLDS.length ? 100 : 0);
 
-  const avatarSeedText = playerName || (playerData.xp.toString() + playerData.level.toString());
-  const avatarColor = generateColorFromSeed(avatarSeedText);
-  const avatarInitial = playerName ? playerName.charAt(0).toUpperCase() : 'P';
-
+  const avatarSeed = playerName || (playerData.xp.toString() + playerData.level.toString());
+  const avatarColor = generateColorFromSeed(avatarSeed);
+  const avatarInitial = playerName ? playerName.charAt(0).toUpperCase() : "P";
 
   const activePetInstance = activePetId ? pets[activePetId] : null;
   
@@ -60,32 +57,29 @@ const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({
     }
   }
 
-
   return (
-    <div className="bg-slate-800/90 backdrop-blur-md shadow-lg p-2.5 fixed top-0 left-0 right-0 z-50 border-b border-slate-700/50">
-      <div className="container mx-auto flex flex-wrap justify-between items-center max-w-5xl px-2 sm:px-4 gap-y-2">
-        {/* Player Info Section */}
+    <div className="bg-slate-800/80 backdrop-blur-sm shadow-lg p-3 fixed top-0 left-0 right-0 z-50">
+      <div className="container mx-auto flex flex-wrap justify-between items-center max-w-4xl px-2 sm:px-4 gap-y-2">
         <div className="flex items-center space-x-2 sm:space-x-3">
           <div
-            className="w-10 h-10 sm:w-11 sm:h-11 rounded-full border-2 border-slate-600 flex items-center justify-center text-slate-50 text-lg font-bold shadow-md"
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-slate-500 flex items-center justify-center text-slate-100 text-xl font-bold"
             style={{ backgroundColor: avatarColor }}
-            title={playerName || UI_TEXT_TH.playerNameDisplayLabel}
+            title={playerName || "ผู้เล่น"}
           >
             {avatarInitial}
           </div>
-          <div>
-            {playerName && <div className="text-white font-semibold text-sm sm:text-md truncate max-w-[90px] sm:max-w-[120px]" title={playerName}>{playerName}</div>}
-            <div className="text-xs text-primary-light">
-              {UI_TEXT_TH.playerLevel}: <span className="font-bold text-white">{level}</span>
+          <div className="text-xs sm:text-sm">
+            {playerName && <div className="font-bold text-white text-shadow mb-0.5 truncate max-w-[100px] sm:max-w-[150px]" title={playerName}>{playerName}</div>}
+            <div>
+                <span className="font-semibold text-sky-300 text-shadow">{UI_TEXT_TH.playerLevel}:</span>
+                <span className="text-white font-bold text-shadow"> {level}</span>
             </div>
-          </div>
-          <div className="w-20 sm:w-28 md:w-32">
-            <div className="text-[10px] sm:text-xs text-textMuted mb-0.5 truncate">
-              {UI_TEXT_TH.xp}: {currentXp} / {level >= LEVEL_THRESHOLDS.length ? currentXp : nextLevelXpTarget}
+            <div className="text-slate-200 text-shadow mt-0.5">
+              {UI_TEXT_TH.xp}: {currentXp} / {nextLevelXpTarget < currentXp && level >= LEVEL_THRESHOLDS.length ? currentXp : nextLevelXpTarget}
             </div>
-            <div className="h-2 bg-slate-700 rounded-full overflow-hidden shadow-inner">
+            <div className="w-24 sm:w-32 md:w-40 h-2 sm:h-2.5 bg-slate-600 rounded-full overflow-hidden mt-1">
               <div
-                className="h-full bg-gradient-to-r from-success-light to-primary-light transition-all duration-500 ease-out"
+                className="h-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-500 ease-out"
                 style={{ width: `${xpProgressPercent}%` }}
                 role="progressbar"
                 aria-valuenow={xpProgressPercent}
@@ -96,9 +90,8 @@ const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({
           </div>
         </div>
 
-        {/* Pet Info Section (aligns center on small, then to right of player info) */}
         {activePetInstance && (
-          <div className="flex items-center space-x-1 order-3 sm:order-2 mx-auto sm:mx-0">
+          <div className="flex items-center space-x-1">
             <PetDisplay
               pet={activePetInstance}
               petFoodCount={petFoodCount}
@@ -106,14 +99,14 @@ const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({
               onPlayWithPet={onPlayWithPet}
             />
             {activeAbilityDescription && (
-                 <SparklesIcon className="w-4 h-4 text-yellow-400 self-center" title={activeAbilityDescription} />
+                 <SparklesIcon className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 text-shadow" title={activeAbilityDescription} />
             )}
           </div>
         )}
 
-        {/* G-Coins (aligns right) */}
-        <div className="text-xs sm:text-sm font-semibold text-accent order-2 sm:order-3 ml-auto sm:ml-0">
-          {UI_TEXT_TH.gCoins}: <span className="text-lg text-white">{gCoins}</span>
+        <div className="text-xs sm:text-sm font-semibold ml-auto sm:ml-0 pl-2 sm:pl-0">
+          <span className="text-amber-400 font-bold text-shadow">{UI_TEXT_TH.gCoins}:</span>
+          <span className="text-white font-bold text-lg text-shadow"> {gCoins}</span>
         </div>
       </div>
     </div>
