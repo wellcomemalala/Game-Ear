@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { UI_TEXT_TH, LEVEL_THRESHOLDS, PET_DEFINITIONS } from '../../constants';
 import { PlayerData, PetAbilityType } from '../../types';
@@ -69,12 +68,12 @@ const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({
             {avatarInitial}
           </div>
           <div className="text-xs sm:text-sm">
-            {playerName && <div className="font-bold text-white text-shadow mb-0.5 truncate max-w-[100px] sm:max-w-[150px]" title={playerName}>{playerName}</div>}
-            <div>
-                <span className="font-semibold text-sky-300 text-shadow">{UI_TEXT_TH.playerLevel}:</span>
-                <span className="text-white font-bold text-shadow"> {level}</span>
+            {playerName && <div className="font-bold text-white text-shadow-strong mb-0.5 truncate max-w-[100px] sm:max-w-[150px]" title={playerName}>{playerName}</div>}
+            <div className="text-shadow-strong">
+                <span className="font-semibold text-sky-300">{UI_TEXT_TH.playerLevel}:</span>
+                <span className="text-white font-bold"> {level}</span>
             </div>
-            <div className="text-slate-200 text-shadow mt-0.5">
+            <div className="text-slate-300 text-shadow-strong mt-0.5">
               {UI_TEXT_TH.xp}: {currentXp} / {nextLevelXpTarget < currentXp && level >= LEVEL_THRESHOLDS.length ? currentXp : nextLevelXpTarget}
             </div>
             <div className="w-24 sm:w-32 md:w-40 h-2 sm:h-2.5 bg-slate-600 rounded-full overflow-hidden mt-1">
@@ -99,14 +98,14 @@ const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({
               onPlayWithPet={onPlayWithPet}
             />
             {activeAbilityDescription && (
-                 <SparklesIcon className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 text-shadow" title={activeAbilityDescription} />
+                 <SparklesIcon className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 text-shadow-strong" title={activeAbilityDescription} />
             )}
           </div>
         )}
 
-        <div className="text-xs sm:text-sm font-semibold ml-auto sm:ml-0 pl-2 sm:pl-0">
-          <span className="text-amber-400 font-bold text-shadow">{UI_TEXT_TH.gCoins}:</span>
-          <span className="text-white font-bold text-lg text-shadow"> {gCoins}</span>
+        <div className="text-xs sm:text-sm font-semibold ml-auto sm:ml-0 pl-2 sm:pl-0 text-shadow-strong">
+          <span className="text-amber-400 font-bold">{UI_TEXT_TH.gCoins}:</span>
+          <span className="text-white font-bold text-lg"> {gCoins}</span>
         </div>
       </div>
     </div>
