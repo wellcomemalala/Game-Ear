@@ -203,7 +203,7 @@ const App: React.FC = () => {
           <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] py-4">
             <div className="bg-card p-6 md:p-10 rounded-xl shadow-2xl w-full max-w-md">
               <h1 className="text-4xl font-bold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-secondary-light">{UI_TEXT_TH.appName}</h1>
-              <h2 className="text-2xl font-bold mb-6 text-white text-center text-shadow-strong">{UI_TEXT_TH.chooseMode}</h2>
+              <h2 className="text-2xl font-bold mb-6 text-sky-200 text-center text-outline-black">{UI_TEXT_TH.chooseMode}</h2>
               <div className="space-y-3.5">
                 {/* Core Gameplay & Challenge */}
                 <button onClick={() => handleModeSelect(GameMode.INTERVALS)} className="w-full btn-primary btn-lg">{UI_TEXT_TH.intervalTraining}</button>
