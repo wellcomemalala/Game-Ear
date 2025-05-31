@@ -1,16 +1,17 @@
 
-import { A4_FREQUENCY } from '../constants';
-import { InstrumentSoundId } from '../types'; // Import InstrumentSoundId
+import { A4_FREQUENCY, midiNoteToFrequency } from '../constants';
+import { InstrumentSoundId, NoteInfo } from '../types'; 
 
 export class AudioService {
   private audioContext: AudioContext | null = null;
   private masterGain: GainNode | null = null;
+  private activeOscillators: OscillatorNode[] = [];
 
   constructor() {
     if (typeof window !== 'undefined' && window.AudioContext) {
       this.audioContext = new window.AudioContext();
       this.masterGain = this.audioContext.createGain();
-      this.masterGain.gain.setValueAtTime(0.3, this.audioContext.currentTime); // Set master volume
+      this.masterGain.gain.setValueAtTime(0.3, this.audioContext.currentTime); 
       this.masterGain.connect(this.audioContext.destination);
       
       if (this.audioContext.state === 'suspended') {
@@ -41,6 +42,17 @@ export class AudioService {
     return rootFrequency * Math.pow(2, semitones / 12);
   }
 
+  public stopAllSounds(): void {
+    this.activeOscillators.forEach(osc => {
+        try {
+            osc.stop();
+        } catch (e) {
+            // Oscillator might have already stopped
+        }
+    });
+    this.activeOscillators = [];
+  }
+
   public playNote(
     frequency: number, 
     duration: number = 1, 
@@ -55,6 +67,7 @@ export class AudioService {
     }
 
     const oscillator = this.audioContext.createOscillator();
+    this.activeOscillators.push(oscillator);
     const gainNode = this.audioContext.createGain();
 
     let selectedOscillatorType: OscillatorType = 'sine';
@@ -75,16 +88,14 @@ export class AudioService {
 
     const now = this.audioContext.currentTime + startTimeOffset;
     
-    // Envelope: Quick attack, sustain, and release
-    // For very short sounds (like metronome tick), reduce attack/release times
     const attackTime = duration < 0.1 ? 0.005 : 0.05;
     const releaseTime = duration < 0.1 ? 0.01 : 0.1;
-    const sustainLevel = duration < 0.1 ? 1.0 : 0.8; // Higher sustain for short ticks
+    const sustainLevel = duration < 0.1 ? 1.0 : 0.8; 
 
     gainNode.gain.setValueAtTime(0, now);
     gainNode.gain.linearRampToValueAtTime(sustainLevel, now + attackTime); 
     
-    if (duration > (attackTime + releaseTime)) { // Ensure there's time for sustain
+    if (duration > (attackTime + releaseTime)) { 
         gainNode.gain.setValueAtTime(sustainLevel, now + duration - releaseTime);
     }
     gainNode.gain.linearRampToValueAtTime(0, now + duration); 
@@ -93,7 +104,11 @@ export class AudioService {
     gainNode.connect(this.masterGain);
 
     oscillator.start(now);
-    oscillator.stop(now + duration + 0.01); // Add small buffer for release to complete
+    oscillator.stop(now + duration + 0.01); 
+    oscillator.onended = () => {
+        this.activeOscillators = this.activeOscillators.filter(osc => osc !== oscillator);
+        gainNode.disconnect();
+    };
   }
 
   public playInterval(
@@ -108,6 +123,7 @@ export class AudioService {
       this.resume(); 
       return;
     }
+    this.stopAllSounds();
 
     const secondNoteFrequency = this.getFrequencyFromSemitones(rootFrequency, intervalSemitones);
 
@@ -130,12 +146,35 @@ export class AudioService {
       this.resume(); 
       return;
     }
+    this.stopAllSounds();
 
     chordSemitones.forEach(semitones => {
       const noteFrequency = this.getFrequencyFromSemitones(rootFrequency, semitones);
       this.playNote(noteFrequency, duration, 0, instrumentSoundId);
     });
   }
+
+  public playMelodySequentially(
+    notes: NoteInfo[], // Array of NoteInfo objects (midiNote, duration)
+    instrumentSoundId: InstrumentSoundId = InstrumentSoundId.SINE,
+    noteDelay: number = 0.1 // Delay in seconds after each note before starting the next
+  ): void {
+    if (!this.audioContext || !this.masterGain) return;
+    if (this.audioContext.state === 'suspended') {
+      this.resume();
+      return;
+    }
+    this.stopAllSounds();
+
+    let accumulatedDelay = 0;
+
+    notes.forEach((noteInfo, index) => {
+      const frequency = midiNoteToFrequency(noteInfo.midiNote);
+      this.playNote(frequency, noteInfo.duration, accumulatedDelay, instrumentSoundId);
+      accumulatedDelay += noteInfo.duration + noteDelay;
+    });
+  }
+
 
   public close(): void {
     if (this.audioContext && this.audioContext.state !== 'closed') {

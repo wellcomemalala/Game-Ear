@@ -12,9 +12,10 @@ interface ChordTrainerProps {
   difficulty: Difficulty;
   playerData: PlayerData;
   addXpAndCoins: (xp: number, coins: number, context: { gameMode: GameMode, currentStreak: number, questionsAnsweredThisMode: number, itemId: string }) => void;
-  updateHighestStreak: (streak: number) => void;
+  updateHighestStreak: (streak: number, gameMode: GameMode) => void;
   isMusicalItemUnlocked: (itemId: string, itemType: UnlockedItemType.INTERVAL | UnlockedItemType.CHORD) => boolean;
   selectedInstrumentSoundId: InstrumentSoundId;
+  highlightPianoOnPlay: boolean; // New
 }
 
 const ChordTrainer: React.FC<ChordTrainerProps> = ({ 
@@ -25,7 +26,8 @@ const ChordTrainer: React.FC<ChordTrainerProps> = ({
     addXpAndCoins, 
     updateHighestStreak, 
     isMusicalItemUnlocked,
-    selectedInstrumentSoundId
+    selectedInstrumentSoundId,
+    highlightPianoOnPlay, // New
 }) => {
   const [currentQuestion, setCurrentQuestion] = useState<Question<ChordInfo> | null>(null);
   const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null);
@@ -96,26 +98,28 @@ const ChordTrainer: React.FC<ChordTrainerProps> = ({
   }, [difficulty, playerData, isMusicalItemUnlocked, onBackToMenu]);
 
   useEffect(() => {
-    // This effect should run to generate the *first* question when the component mounts
-    // for a given difficulty, or if the difficulty itself changes.
-    // It should NOT re-run simply because playerData (and thus generateQuestion's identity) changed
-    // as a side effect of answering a question.
     generateQuestion();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [difficulty]); // Only trigger a new *initial* question load if `difficulty` changes.
+  }, [difficulty, generateQuestion]);
 
   const playCurrentChord = useCallback(() => {
     if (currentQuestion && audioService) {
       setIsSoundPlaying(true);
       setIsSoundPlayed(true);
-      const rootMidiNote = frequencyToMidiNote(currentQuestion.rootFrequency);
-      const chordMidiNotes = currentQuestion.item.semitones.map(offset => rootMidiNote + offset);
-      setHighlightedNotes(chordMidiNotes);
+      if (highlightPianoOnPlay) {
+        const rootMidiNote = frequencyToMidiNote(currentQuestion.rootFrequency);
+        const chordMidiNotes = currentQuestion.item.semitones.map(offset => rootMidiNote + offset);
+        setHighlightedNotes(chordMidiNotes);
+      } else {
+        setHighlightedNotes([]);
+      }
       audioService.playChord(currentQuestion.rootFrequency, currentQuestion.item.semitones, 1.5, selectedInstrumentSoundId);
       const soundDuration = 1600; 
-      setTimeout(() => setIsSoundPlaying(false), soundDuration); 
+      setTimeout(() => {
+        setIsSoundPlaying(false);
+        if (highlightPianoOnPlay) setHighlightedNotes([]); // Clear after sound if it was on
+      }, soundDuration); 
     }
-  }, [currentQuestion, audioService, selectedInstrumentSoundId]);
+  }, [currentQuestion, audioService, selectedInstrumentSoundId, highlightPianoOnPlay]);
 
   const handleAnswer = (chordId: string) => {
     if (!currentQuestion || showFeedback) return;
@@ -130,7 +134,7 @@ const ChordTrainer: React.FC<ChordTrainerProps> = ({
       setScore(newScore);
       const newStreak = currentStreak + 1;
       setCurrentStreak(newStreak);
-      if (newStreak > playerData.highestStreak) updateHighestStreak(newStreak);
+      updateHighestStreak(newStreak, GameMode.CHORDS);
 
       addXpAndCoins(XP_PER_CORRECT_ANSWER, GCOINS_PER_CORRECT_ANSWER, {
         gameMode: GameMode.CHORDS,
@@ -173,7 +177,7 @@ const ChordTrainer: React.FC<ChordTrainerProps> = ({
       onNextQuestion={handleNextQuestion}
       isQuestionAnswered={showFeedback}
       isSoundPlaying={isSoundPlaying}
-      highlightedNotes={highlightedNotes}
+      highlightedNotes={highlightedNotes} // Already respects highlightPianoOnPlay
     >
       {currentQuestion.options.map(option => (
         <OptionButton

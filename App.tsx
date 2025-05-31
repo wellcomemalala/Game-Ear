@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { GameMode, Difficulty, PlayerData, AppView, InstrumentSoundId, PetId, NotificationMessage, MissionId, MonsterId, MissionType } from './types'; // Added MonsterId, MissionType
-import { UI_TEXT_TH, getDifficultyText, DAILY_LOGIN_REWARD, getInstrumentSoundName, PET_DEFINITIONS, getHouseLevelName, ALL_MONSTERS } from './constants';
+import { GameMode, Difficulty, PlayerData, AppView, InstrumentSoundId, PetId, NotificationMessage, MissionId, MonsterId, MissionType, NPCId, QuestId, AvatarStyle, QuestStatus } from './types';
+import { UI_TEXT_TH, getDifficultyText, DAILY_LOGIN_REWARD, getInstrumentSoundName, PET_DEFINITIONS, getHouseLevelName, ALL_MONSTERS, getNPCName, getQuestTitle, QUEST_DEFINITIONS, getQuestDefinition } from './constants';
 import IntervalTrainer from './components/IntervalTrainer';
 import ChordTrainer from './components/ChordTrainer';
+import MelodyRecallTrainer from './components/MelodyRecallTrainer'; 
 import SummaryPage from './components/SummaryPage';
 import UnlockablesStore from './components/UnlockablesStore';
 import Shop from './components/ShopPlaceholder';
@@ -17,7 +18,9 @@ import MonsterLairPage from './components/MonsterLairPage';
 import MonsterBattlePage from './components/MonsterBattlePage'; 
 import MonsterpediaPage from './components/MonsterpediaPage'; 
 import FreestyleJamRoomPage from './components/FreestyleJamRoomPage';
-import GameGuidePage from './components/GameGuidePage'; // New
+import GameGuidePage from './components/GameGuidePage';
+import NPCHubPage from './components/NPCHubPage';
+import QuestInteractionPage from './components/QuestInteractionPage';
 import { AudioService } from './services/AudioService';
 import { usePlayerData } from './hooks/usePlayerData';
 import PlayerStatusBar from './components/rpg/PlayerStatusBar';
@@ -27,8 +30,9 @@ import { MissionScrollIcon } from './components/icons/MissionScrollIcon';
 import { LairIcon } from './components/icons/LairIcon'; 
 import { BookOpenIcon } from './components/icons/BookOpenIcon'; 
 import { MusicNotesIcon } from './components/icons/MusicNotesIcon';
-import { BookInfoIcon } from './components/icons/BookInfoIcon'; // New
-import { ExternalLinkIcon } from './components/icons/ExternalLinkIcon'; // New for Facebook link
+import { BookInfoIcon } from './components/icons/BookInfoIcon';
+import { ExternalLinkIcon } from './components/icons/ExternalLinkIcon';
+import { UsersIcon } from './components/icons/UsersIcon';
 
 
 const App: React.FC = () => {
@@ -39,6 +43,7 @@ const App: React.FC = () => {
   const [isAudioContextReady, setIsAudioContextReady] = useState(false);
   const [selectedModeForDifficulty, setSelectedModeForDifficulty] = useState<GameMode | null>(null);
   const [selectedMonsterId, setSelectedMonsterId] = useState<MonsterId | null>(null); 
+  const [selectedNPCId, setSelectedNPCId] = useState<NPCId | null>(null);
 
   const {
     playerData,
@@ -57,7 +62,7 @@ const App: React.FC = () => {
     selectInstrumentSound,
     adoptPet,
     feedPet,
-    updatePetStateOnLoad,
+    updatePetStateOnLoad, // This now delegates to petSystem.updatePetStatePeriodic
     playWithPet,
     setActivePet,
     applyPetCustomization,
@@ -71,6 +76,12 @@ const App: React.FC = () => {
     claimMissionReward,
     recordMonsterDefeat, 
     updateMissionProgress, 
+    toggleHighlightPianoOnPlay,
+    setAvatarStyle,
+    startQuest,
+    progressQuest,
+    completeQuest,
+    getQuestStatus,
   } = usePlayerData();
 
 
@@ -116,6 +127,10 @@ const App: React.FC = () => {
         notificationPayload.messageKey = rewardDetails.houseBonus > 0 ? 'dailyRewardHouseBonusMessage' : 'dailyRewardMessage';
         addNotification(notificationPayload);
       }
+      // updatePetStateOnLoad now handles periodic updates including special requests.
+      // It might be called here on menu load, or usePlayerData might manage its periodic call internally.
+      // For now, let's assume it's called periodically by the hook itself.
+      // If not, and it's intended to be triggered on menu load:
       if (playerData.activePetId && playerData.pets[playerData.activePetId]) updatePetStateOnLoad();
     }
   }, [currentView, checkForDailyLoginReward, addNotification, playerData, updatePetStateOnLoad]);
@@ -131,7 +146,9 @@ const App: React.FC = () => {
     if (selectedModeForDifficulty) {
       setGameMode(selectedModeForDifficulty);
       setDifficulty(selectedDifficulty);
-      setCurrentView(selectedModeForDifficulty === GameMode.INTERVALS ? AppView.INTERVAL_TRAINER : AppView.CHORD_TRAINER);
+      if (selectedModeForDifficulty === GameMode.INTERVALS) setCurrentView(AppView.INTERVAL_TRAINER);
+      else if (selectedModeForDifficulty === GameMode.CHORDS) setCurrentView(AppView.CHORD_TRAINER);
+      else if (selectedModeForDifficulty === GameMode.MELODY_RECALL) setCurrentView(AppView.MELODY_RECALL_TRAINER);
     }
   };
 
@@ -139,247 +156,334 @@ const App: React.FC = () => {
     setGameMode(null);
     setDifficulty(null);
     setSelectedModeForDifficulty(null);
-    setSelectedMonsterId(null); 
+    setSelectedNPCId(null);
     setCurrentView(AppView.MENU);
   };
+  
+  const handleAdoptPet = (petId: PetId) => {
+    // Logic for post-adoption navigation or feedback is handled by usePetSystem and App's state changes
+  };
 
-  const navigateToSummary = () => setCurrentView(AppView.SUMMARY_PAGE);
-  const navigateToUnlockablesStore = () => setCurrentView(AppView.UNLOCKABLES_STORE);
-  const navigateToShop = () => setCurrentView(AppView.SHOP);
-  const navigateToSettings = () => setCurrentView(AppView.SETTINGS);
-  const navigateToPetAdoption = () => setCurrentView(AppView.PET_ADOPTION_PAGE);
-  const navigateToPetManagement = () => setCurrentView(AppView.PET_MANAGEMENT_PAGE);
-  const navigateToMyHome = () => setCurrentView(AppView.MY_HOME);
-  const navigateToMissions = () => setCurrentView(AppView.MISSIONS_PAGE);
-  const navigateToMonsterLair = () => setCurrentView(AppView.MONSTER_LAIR); 
-  const navigateToMonsterpedia = () => setCurrentView(AppView.MONSTERPEDIA); 
-  const navigateToGameGuidePage = () => setCurrentView(AppView.GAME_GUIDE_PAGE);
-  const navigateToFreestyleJamRoom = () => { 
-    setCurrentView(AppView.FREESTYLE_JAM_ROOM);
-    if (!isAudioContextReady) initializeAudio();
-  }
-
-  const handleMonsterSelect = (monsterId: MonsterId) => { 
+  const handleNameSubmitted = () => {
+    initializeAudio(); 
+  };
+  
+  const handleMonsterSelect = (monsterId: MonsterId) => {
     setSelectedMonsterId(monsterId);
     setCurrentView(AppView.MONSTER_BATTLE);
-    updateMissionProgress(MissionType.START_MONSTER_BATTLE, 1, { monsterId: monsterId }); 
-    if (!isAudioContextReady) initializeAudio();
+  };
+
+  const handleMonsterBattleEnd = () => {
+    setSelectedMonsterId(null);
+    setCurrentView(AppView.MONSTER_LAIR); 
+  };
+
+  const handleNPCSelect = (npcId: NPCId) => {
+    setSelectedNPCId(npcId);
+    setCurrentView(AppView.QUEST_INTERACTION);
+  };
+
+  const handleBackToNPCHub = () => {
+    setSelectedNPCId(null);
+    setCurrentView(AppView.NPC_HUB);
   };
 
 
-  if (!playerData) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-slate-100 p-4">
-        <div className="text-xl font-semibold">{UI_TEXT_TH.loading}</div>
-      </div>
-    );
-  }
-
   const renderContent = () => {
-    if (!playerData && currentView !== AppView.AUDIO_PROMPT) {
-        return <div className="flex items-center justify-center min-h-screen"><div className="text-xl font-semibold text-slate-100">{UI_TEXT_TH.loading}</div></div>;
+    if (!playerData) return <div className="text-center p-4 text-slate-100 text-xl">{UI_TEXT_TH.loading}...</div>;
+    if (currentView === AppView.AUDIO_PROMPT) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-slate-100 p-6">
+          <h1 className="text-3xl font-bold mb-4 text-center text-sky-300 text-shadow-lg">{UI_TEXT_TH.appName}</h1>
+          <p className="mb-8 text-lg text-center text-slate-200 max-w-md">{UI_TEXT_TH.audioContextPrompt}</p>
+          <button onClick={initializeAudio} className="btn-primary btn-lg">
+            {UI_TEXT_TH.start}
+          </button>
+        </div>
+      );
     }
+
+    if (currentView === AppView.PLAYER_NAME_INPUT) {
+      return <PlayerNameInputPage setPlayerName={setPlayerName} onNameSubmitted={handleNameSubmitted} />;
+    }
+    
+    if (!isAudioContextReady) { 
+        return <div className="text-center p-4 text-slate-100 text-xl">{UI_TEXT_TH.loadingAudio}...</div>;
+    }
+
 
     switch (currentView) {
-      case AppView.AUDIO_PROMPT:
-        return (
-          <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-slate-100 p-4">
-            <div className="bg-card p-8 rounded-xl shadow-2xl text-center max-w-md">
-              <h1 className="text-4xl font-bold mb-8 text-sky-300 text-outline-black">{UI_TEXT_TH.appName}</h1>
-              <p className="mb-6 text-textMuted">{UI_TEXT_TH.audioContextPrompt}</p>
-              <button onClick={initializeAudio} className="btn btn-primary btn-lg w-full">
-                {UI_TEXT_TH.start}
-              </button>
-              {typeof window !== 'undefined' && !window.AudioContext && <p className="mt-4 text-destructive">{UI_TEXT_TH.audioNotSupported}</p>}
-            </div>
-          </div>
-        );
-
-      case AppView.PLAYER_NAME_INPUT:
-        return <PlayerNameInputPage setPlayerName={setPlayerName} onNameSubmitted={() => setCurrentView(AppView.MENU)} />;
-
-      case AppView.MENU:
-        return (
-          <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] py-4">
-            <div className="bg-card p-6 md:p-10 rounded-xl shadow-2xl w-full max-w-md">
-              <h1 className="text-4xl font-bold mb-6 text-center text-sky-300 text-outline-black">{UI_TEXT_TH.appName}</h1>
-              <h2 className="text-2xl font-bold mb-6 text-sky-300 text-center text-outline-black">{UI_TEXT_TH.chooseMode}</h2>
-              <div className="space-y-3.5">
-                {/* Core Gameplay & Challenge */}
-                <button onClick={() => handleModeSelect(GameMode.INTERVALS)} className="w-full btn-primary btn-lg">{UI_TEXT_TH.intervalTraining}</button>
-                <button onClick={() => handleModeSelect(GameMode.CHORDS)} className="w-full btn-secondary btn-lg">{UI_TEXT_TH.chordTraining}</button>
-                <button onClick={navigateToMonsterLair} className="w-full btn bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white focus:ring-orange-400">
-                    <LairIcon className="w-5 h-5" /><span>{UI_TEXT_TH.monsterLairTitle}</span>
-                </button>
-                <button onClick={navigateToMissions} className="w-full btn-info"><MissionScrollIcon className="w-5 h-5" /><span>{UI_TEXT_TH.missionsPageTitle}</span></button>
-                
-                {/* Player Hub & Progression */}
-                <button onClick={navigateToMyHome} className="w-full btn-neutral"><HomeIcon className="w-5 h-5" /><span>{UI_TEXT_TH.myHomeScreenTitle}</span></button>
-                {playerData.ownedPetIds.length === 0 ? (
-                  <button onClick={navigateToPetAdoption} className="w-full btn bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white focus:ring-cyan-400">{UI_TEXT_TH.viewPetAdoption}</button>
-                ) : (
-                  <button onClick={navigateToPetManagement} className="w-full btn bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white focus:ring-purple-400">{UI_TEXT_TH.petManagementTitle}</button>
-                )}
-                 {playerData.ownedPetIds.length > 0 && playerData.ownedPetIds.length < PET_DEFINITIONS.length && (
-                    <button onClick={navigateToPetAdoption} className="w-full btn bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white focus:ring-cyan-400">{UI_TEXT_TH.viewPetAdoption}</button>
-                 )}
-
-                {/* Exploration & Tools */}
-                <button onClick={navigateToFreestyleJamRoom} className="w-full btn bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white focus:ring-pink-400">
-                    <MusicNotesIcon className="w-5 h-5" /><span>{UI_TEXT_TH.freestyleJamRoomButton}</span>
-                </button>
-                <button onClick={navigateToMonsterpedia} className="w-full btn bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white focus:ring-indigo-400">
-                    <BookOpenIcon className="w-5 h-5" /><span>{UI_TEXT_TH.monsterpediaTitle}</span>
-                </button>
-
-                {/* Store & Unlocks */}
-                <button onClick={navigateToShop} className="w-full btn-neutral">{UI_TEXT_TH.viewShop}</button>
-                <button onClick={navigateToUnlockablesStore} className="w-full btn-accent">{UI_TEXT_TH.viewUnlockables}</button>
-                
-                {/* Info & Settings */}
-                <button onClick={navigateToSummary} className="w-full btn-info">{UI_TEXT_TH.viewSummary}</button>
-                <button onClick={navigateToGameGuidePage} className="w-full btn-info"><BookInfoIcon className="w-5 h-5" /><span>{UI_TEXT_TH.viewGameGuide}</span></button>
-                <button onClick={navigateToSettings} className="w-full btn-settings">{UI_TEXT_TH.viewSettings}</button>
-              </div>
-              {/* Zalay Beat X Ai Link */}
-              <div className="mt-8 pt-6 border-t border-borderDefault text-center">
-                <a
-                  href="https://www.facebook.com/keetazalay24"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800 text-slate-100 text-sm font-semibold rounded-lg shadow-md transition-colors hover:text-white"
-                >
-                  สร้างโดย Zalay Beat X Ai
-                  <ExternalLinkIcon className="w-4 h-4 ml-2" />
-                </a>
-              </div>
-            </div>
-          </div>
-        );
-
       case AppView.DIFFICULTY_SELECTION:
         return (
-          <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)]">
-            <div className="bg-card p-8 md:p-12 rounded-xl shadow-2xl w-full max-w-md">
-              <h2 className="text-2xl font-bold mb-6 text-sky-300 text-center text-outline-black">{UI_TEXT_TH.difficultyPrompt}</h2>
-              <div className="space-y-3.5">
-                <button onClick={() => handleDifficultySelect(Difficulty.EASY)} className="w-full btn-easy btn-lg">{UI_TEXT_TH.easy}</button>
-                <button onClick={() => handleDifficultySelect(Difficulty.MEDIUM)} className="w-full btn-medium btn-lg">{UI_TEXT_TH.medium}</button>
-                <button onClick={() => handleDifficultySelect(Difficulty.HARD)} className="w-full btn-hard btn-lg">{UI_TEXT_TH.hard}</button>
-                <button onClick={handleBackToMenu} className="w-full btn-neutral mt-6">{UI_TEXT_TH.backToMenu}</button>
-              </div>
+          <div className="flex flex-col items-center justify-center pt-24 p-4">
+            <h2 className="text-3xl font-bold mb-8 text-sky-300 text-shadow-lg">{UI_TEXT_TH.difficultyPrompt}</h2>
+            <div className="space-y-4 w-full max-w-xs">
+              <button onClick={() => handleDifficultySelect(Difficulty.EASY)} className="btn-easy btn-lg w-full">
+                {getDifficultyText(Difficulty.EASY, selectedModeForDifficulty)}
+              </button>
+              <button onClick={() => handleDifficultySelect(Difficulty.MEDIUM)} className="btn-medium btn-lg w-full">
+                {getDifficultyText(Difficulty.MEDIUM, selectedModeForDifficulty)}
+              </button>
+              <button onClick={() => handleDifficultySelect(Difficulty.HARD)} className="btn-hard btn-lg w-full">
+                {getDifficultyText(Difficulty.HARD, selectedModeForDifficulty)}
+              </button>
+              <button onClick={handleBackToMenu} className="btn-neutral w-full mt-6">
+                &larr; {UI_TEXT_TH.backToMenu}
+              </button>
             </div>
           </div>
         );
-
       case AppView.INTERVAL_TRAINER:
-        if (gameMode === GameMode.INTERVALS && difficulty && audioService) {
-          return (
-            <IntervalTrainer
-              audioService={audioService}
-              onBackToMenu={handleBackToMenu}
-              difficulty={difficulty}
-              playerData={playerData}
-              addXpAndCoins={addXpAndCoins}
-              updateHighestStreak={updateHighestStreak}
-              isMusicalItemUnlocked={isMusicalItemUnlocked}
-              selectedInstrumentSoundId={playerData.selectedInstrumentSoundId}
-            />
-          );
+        if (audioService && difficulty) {
+          return <IntervalTrainer 
+                    audioService={audioService} 
+                    onBackToMenu={handleBackToMenu} 
+                    difficulty={difficulty}
+                    playerData={playerData}
+                    addXpAndCoins={addXpAndCoins}
+                    updateHighestStreak={updateHighestStreak}
+                    isMusicalItemUnlocked={isMusicalItemUnlocked}
+                    selectedInstrumentSoundId={playerData.selectedInstrumentSoundId}
+                    highlightPianoOnPlay={playerData.highlightPianoOnPlay} 
+                 />;
         }
         break;
-
       case AppView.CHORD_TRAINER:
-        if (gameMode === GameMode.CHORDS && difficulty && audioService) {
-          return (
-            <ChordTrainer
-              audioService={audioService}
-              onBackToMenu={handleBackToMenu}
-              difficulty={difficulty}
-              playerData={playerData}
-              addXpAndCoins={addXpAndCoins}
-              updateHighestStreak={updateHighestStreak}
-              isMusicalItemUnlocked={isMusicalItemUnlocked}
-              selectedInstrumentSoundId={playerData.selectedInstrumentSoundId}
-            />
-          );
+        if (audioService && difficulty) {
+          return <ChordTrainer 
+                    audioService={audioService} 
+                    onBackToMenu={handleBackToMenu} 
+                    difficulty={difficulty}
+                    playerData={playerData}
+                    addXpAndCoins={addXpAndCoins}
+                    updateHighestStreak={updateHighestStreak}
+                    isMusicalItemUnlocked={isMusicalItemUnlocked}
+                    selectedInstrumentSoundId={playerData.selectedInstrumentSoundId}
+                    highlightPianoOnPlay={playerData.highlightPianoOnPlay}
+                 />;
         }
         break;
-
+      case AppView.MELODY_RECALL_TRAINER:
+        if (audioService && difficulty) {
+          return <MelodyRecallTrainer 
+                    audioService={audioService} 
+                    onBackToMenu={handleBackToMenu} 
+                    difficulty={difficulty}
+                    playerData={playerData}
+                    addXpAndCoins={addXpAndCoins}
+                    updateHighestStreak={updateHighestStreak}
+                    selectedInstrumentSoundId={playerData.selectedInstrumentSoundId}
+                    highlightPianoOnPlay={playerData.highlightPianoOnPlay}
+                  />;
+        }
+        break;
       case AppView.SUMMARY_PAGE:
-        return <SummaryPage playerData={playerData} allAchievements={allAchievements} getAchievementDetails={getAchievementDetails} onBackToMenu={handleBackToMenu} />;
-
+        return <SummaryPage 
+                  playerData={playerData} 
+                  allAchievements={allAchievements} 
+                  getAchievementDetails={getAchievementDetails} 
+                  onBackToMenu={handleBackToMenu} 
+                />;
       case AppView.UNLOCKABLES_STORE:
-        return <UnlockablesStore playerData={playerData} onBackToMenu={handleBackToMenu} unlockMusicalItem={unlockMusicalItem} isMusicalItemUnlocked={isMusicalItemUnlocked} getActivePetAbilityMultiplier={getActivePetAbilityMultiplier} />;
-      
+        return <UnlockablesStore 
+                  playerData={playerData} 
+                  onBackToMenu={handleBackToMenu} 
+                  unlockMusicalItem={unlockMusicalItem}
+                  isMusicalItemUnlocked={isMusicalItemUnlocked}
+                  getActivePetAbilityMultiplier={getActivePetAbilityMultiplier}
+               />;
       case AppView.SHOP:
-        return <Shop playerData={playerData} onBackToMenu={handleBackToMenu} purchaseShopItem={purchaseShopItem} isShopItemPurchased={isShopItemPurchased} addNotification={addNotification} />;
-
+        return <Shop 
+                  playerData={playerData}
+                  onBackToMenu={handleBackToMenu}
+                  purchaseShopItem={purchaseShopItem}
+                  isShopItemPurchased={isShopItemPurchased}
+                  addNotification={addNotification}
+               />;
       case AppView.SETTINGS:
-        return <SettingsPage playerData={playerData} onBackToMenu={handleBackToMenu} selectInstrumentSound={selectInstrumentSound} saveGameExplicitly={saveGameExplicitly} resetGame={resetGame} />;
-
+        return <SettingsPage 
+                  playerData={playerData}
+                  onBackToMenu={handleBackToMenu}
+                  selectInstrumentSound={selectInstrumentSound}
+                  saveGameExplicitly={saveGameExplicitly}
+                  resetGame={resetGame}
+                  toggleHighlightPianoOnPlay={toggleHighlightPianoOnPlay}
+                  highlightPianoOnPlay={playerData.highlightPianoOnPlay}
+                  setAvatarStyle={setAvatarStyle}
+                />;
       case AppView.PET_ADOPTION_PAGE:
-        return <PetAdoptionPage playerData={playerData} onBackToMenu={handleBackToMenu} adoptPet={adoptPet} onPetAdopted={() => { /* Maybe navigate to pet management or menu */ }} />;
-      
+        return <PetAdoptionPage 
+                  playerData={playerData} 
+                  onBackToMenu={handleBackToMenu} 
+                  adoptPet={adoptPet} 
+                  onPetAdopted={handleAdoptPet}
+                />;
       case AppView.PET_MANAGEMENT_PAGE:
-        return <PetManagementPage playerData={playerData} onBackToMenu={handleBackToMenu} setActivePet={setActivePet} applyPetCustomization={applyPetCustomization} purchaseShopItem={purchaseShopItem} isShopItemPurchased={isShopItemPurchased} addNotification={addNotification} />;
-
+          return <PetManagementPage 
+                    playerData={playerData}
+                    onBackToMenu={handleBackToMenu}
+                    setActivePet={setActivePet}
+                    applyPetCustomization={applyPetCustomization}
+                    purchaseShopItem={purchaseShopItem}
+                    isShopItemPurchased={isShopItemPurchased}
+                    addNotification={addNotification}
+                  />;
       case AppView.MY_HOME:
-        return <MyHomeScreen playerData={playerData} upgradeHouse={upgradeHouse} activatePracticeNook={activatePracticeNook} addNotification={addNotification} onBackToMenu={handleBackToMenu} />;
-
+          return <MyHomeScreen
+                    playerData={playerData}
+                    upgradeHouse={upgradeHouse}
+                    activatePracticeNook={activatePracticeNook}
+                    addNotification={addNotification}
+                    onBackToMenu={handleBackToMenu}
+                  />;
       case AppView.MISSIONS_PAGE:
-        return <MissionsPage playerData={playerData} claimMissionReward={claimMissionReward} onBackToMenu={handleBackToMenu} />;
-      
-      case AppView.MONSTER_LAIR: 
-        return <MonsterLairPage playerData={playerData} onMonsterSelect={handleMonsterSelect} onBackToMenu={handleBackToMenu} />;
-
+          return <MissionsPage 
+                    playerData={playerData}
+                    claimMissionReward={claimMissionReward}
+                    onBackToMenu={handleBackToMenu}
+                  />;
+      case AppView.MONSTER_LAIR:
+          return <MonsterLairPage 
+                    playerData={playerData}
+                    onMonsterSelect={handleMonsterSelect}
+                    onBackToMenu={handleBackToMenu}
+                 />;
       case AppView.MONSTER_BATTLE:
-        if (selectedMonsterId && audioService) {
-            return <MonsterBattlePage 
-                        audioService={audioService} 
-                        monsterId={selectedMonsterId} 
-                        playerData={playerData} 
-                        recordMonsterDefeat={recordMonsterDefeat} 
-                        onBattleEnd={handleBackToMenu} 
-                        selectedInstrumentSoundId={playerData.selectedInstrumentSoundId}
-                        addNotification={addNotification}
-                        isMusicalItemUnlocked={isMusicalItemUnlocked}
+          if (audioService && selectedMonsterId) {
+            return <MonsterBattlePage
+                      audioService={audioService}
+                      monsterId={selectedMonsterId}
+                      playerData={playerData}
+                      recordMonsterDefeat={recordMonsterDefeat}
+                      onBattleEnd={handleMonsterBattleEnd}
+                      selectedInstrumentSoundId={playerData.selectedInstrumentSoundId}
+                      addNotification={addNotification}
+                      isMusicalItemUnlocked={isMusicalItemUnlocked}
                     />;
-        }
-        break;
+          }
+          break;
       case AppView.MONSTERPEDIA:
-        return <MonsterpediaPage playerData={playerData} onBackToMenu={handleBackToMenu} />;
-
+          return <MonsterpediaPage
+                      playerData={playerData}
+                      onBackToMenu={handleBackToMenu}
+                  />;
       case AppView.FREESTYLE_JAM_ROOM:
-        if (audioService) {
-            return <FreestyleJamRoomPage 
-                        audioService={audioService} 
-                        playerData={playerData} 
-                        onBackToMenu={handleBackToMenu} 
-                        updateMissionProgress={updateMissionProgress}
-                    />;
-        }
-        break;
+           if (audioService) {
+            return <FreestyleJamRoomPage
+                      audioService={audioService}
+                      playerData={playerData}
+                      onBackToMenu={handleBackToMenu}
+                      updateMissionProgress={updateMissionProgress}
+                   />;
+          }
+          break;
       case AppView.GAME_GUIDE_PAGE:
-        return <GameGuidePage onBackToMenu={handleBackToMenu} />;
+          return <GameGuidePage onBackToMenu={handleBackToMenu} />;
+      case AppView.NPC_HUB:
+          return <NPCHubPage 
+                    playerData={playerData} 
+                    onSelectNPC={handleNPCSelect} 
+                    onBackToMenu={handleBackToMenu}
+                    getQuestStatus={getQuestStatus}
+                  />;
+      case AppView.QUEST_INTERACTION:
+          if (selectedNPCId) {
+            return <QuestInteractionPage 
+                      npcId={selectedNPCId} 
+                      playerData={playerData} 
+                      onBackToHub={handleBackToNPCHub}
+                      onAcceptQuest={startQuest} 
+                      onProgressQuest={progressQuest}
+                      onClaimReward={completeQuest}
+                      getQuestStatus={getQuestStatus}
+                   />;
+          }
+          break;
+      case AppView.MENU:
+      default:
+        return (
+          <div className="flex-grow flex flex-col items-center justify-center pt-12 md:pt-16 p-4 space-y-3 md:space-y-4">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-3 md:mb-5 text-center text-sky-300 text-shadow-lg">{UI_TEXT_TH.chooseMode}</h1>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 w-full max-w-md md:max-w-lg">
+              <button onClick={() => handleModeSelect(GameMode.INTERVALS)} className="btn-primary btn-lg w-full text-base md:text-lg">
+                {UI_TEXT_TH.intervalTraining}
+              </button>
+              <button onClick={() => handleModeSelect(GameMode.CHORDS)} className="btn-primary btn-lg w-full text-base md:text-lg">
+                {UI_TEXT_TH.chordTraining}
+              </button>
+              <button onClick={() => handleModeSelect(GameMode.MELODY_RECALL)} className="btn-primary btn-lg w-full text-base md:text-lg">
+                {UI_TEXT_TH.melodyRecallTrainingButton}
+              </button>
+               <button onClick={() => setCurrentView(AppView.FREESTYLE_JAM_ROOM)} className="btn-secondary btn-lg w-full text-base md:text-lg">
+                 <MusicNotesIcon className="w-5 h-5 mr-2" /> {UI_TEXT_TH.freestyleJamRoomButton}
+              </button>
+            </div>
+            <div className="mt-5 md:mt-8 border-t border-slate-700 w-full max-w-md md:max-w-lg pt-5 md:pt-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
+                    <button onClick={() => setCurrentView(AppView.SUMMARY_PAGE)} className="btn-info w-full text-sm py-2.5">
+                        <BookOpenIcon className="w-4 h-4 mr-1.5"/> {UI_TEXT_TH.viewSummary}
+                    </button>
+                    <button onClick={() => setCurrentView(AppView.UNLOCKABLES_STORE)} className="btn-info w-full text-sm py-2.5">
+                       <ExternalLinkIcon className="w-4 h-4 mr-1.5"/> {UI_TEXT_TH.viewUnlockables}
+                    </button>
+                    <button onClick={() => setCurrentView(AppView.SHOP)} className="btn-info w-full text-sm py-2.5">
+                        {UI_TEXT_TH.viewShop}
+                    </button>
+                    <button onClick={() => setCurrentView(AppView.MY_HOME)} className="btn-neutral w-full text-sm py-2.5">
+                        <HomeIcon className="w-4 h-4 mr-1.5" /> {UI_TEXT_TH.myHomeScreenTitle}
+                    </button>
+                    <button onClick={() => setCurrentView(AppView.PET_MANAGEMENT_PAGE)} className="btn-neutral w-full text-sm py-2.5">
+                        {UI_TEXT_TH.petManagementTitle}
+                    </button>
+                     <button onClick={() => setCurrentView(AppView.PET_ADOPTION_PAGE)} className="btn-neutral w-full text-sm py-2.5">
+                        {UI_TEXT_TH.viewPetAdoption}
+                    </button>
+                    <button onClick={() => setCurrentView(AppView.MISSIONS_PAGE)} className="btn-accent w-full text-sm py-2.5">
+                        <MissionScrollIcon className="w-4 h-4 mr-1.5" /> {UI_TEXT_TH.missionsPageTitle}
+                    </button>
+                    <button onClick={() => setCurrentView(AppView.MONSTER_LAIR)} className="btn-destructive w-full text-sm py-2.5">
+                        <LairIcon className="w-4 h-4 mr-1.5" /> {UI_TEXT_TH.monsterLairTitle}
+                    </button>
+                     <button onClick={() => setCurrentView(AppView.MONSTERPEDIA)} className="btn-neutral w-full text-sm py-2.5">
+                        <BookOpenIcon className="w-4 h-4 mr-1.5" /> {UI_TEXT_TH.monsterpediaTitle}
+                    </button>
+                     <button onClick={() => setCurrentView(AppView.NPC_HUB)} className="btn-info w-full text-sm py-2.5">
+                        <UsersIcon className="w-4 h-4 mr-1.5"/> {UI_TEXT_TH.viewNPCHub}
+                    </button>
+                    <button onClick={() => setCurrentView(AppView.GAME_GUIDE_PAGE)} className="btn-neutral w-full text-sm py-2.5">
+                        <BookInfoIcon className="w-4 h-4 mr-1.5" /> {UI_TEXT_TH.viewGameGuide}
+                    </button>
+                    <button onClick={() => setCurrentView(AppView.SETTINGS)} className="btn-settings w-full text-sm py-2.5">
+                        {UI_TEXT_TH.viewSettings}
+                    </button>
+                </div>
+            </div>
+          </div>
+        );
     }
-    return (
-      <div className="text-center p-4 text-textBase">
-        <p>เกิดข้อผิดพลาดในการแสดงผล (View: {currentView}, Mode: {gameMode}, Difficulty: {difficulty})</p>
-        <button onClick={handleBackToMenu} className="mt-4 btn-secondary">{UI_TEXT_TH.backToMenu}</button>
-      </div>
-    );
+    return <div className="text-center p-4">{UI_TEXT_TH.loading}... (View not found for {currentView})</div>;
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="min-h-screen flex flex-col">
       {currentView !== AppView.AUDIO_PROMPT && currentView !== AppView.PLAYER_NAME_INPUT && playerData && (
-          <PlayerStatusBar playerData={playerData} onFeedPet={feedPet} onPlayWithPet={playWithPet} getActivePetAbilityMultiplier={getActivePetAbilityMultiplier} />
+        <PlayerStatusBar 
+            playerData={playerData} 
+            onFeedPet={feedPet} // feedPet now comes from the refactored usePlayerData
+            onPlayWithPet={playWithPet} // playWithPet now comes from the refactored usePlayerData
+            getActivePetAbilityMultiplier={(currentPlayerData, abilityType) => getActivePetAbilityMultiplier(currentPlayerData, abilityType)}
+        />
       )}
-      <main className={`flex-grow flex flex-col items-center justify-center ${currentView !== AppView.AUDIO_PROMPT && currentView !== AppView.PLAYER_NAME_INPUT ? 'pt-24 pb-4 px-2 sm:px-4' : ''}`}>
-        {renderContent()}
+      <main className={`flex-grow flex flex-col items-center justify-center text-slate-100 transition-opacity duration-500 ease-in-out ${ (currentView !== AppView.AUDIO_PROMPT && currentView !== AppView.PLAYER_NAME_INPUT && playerData) ? 'pt-20 md:pt-24' : ''}`}>
+        {playerData ? renderContent() : <div className="text-center p-4 text-slate-100 text-xl">{UI_TEXT_TH.loading}...</div>}
       </main>
-      <NotificationArea notifications={notifications} onDismiss={dismissNotification} getAchievementDetails={getAchievementDetails} />
+      {notifications.length > 0 && (
+        <NotificationArea 
+            notifications={notifications} 
+            onDismiss={dismissNotification}
+            getAchievementDetails={getAchievementDetails}
+        />
+      )}
     </div>
   );
 };

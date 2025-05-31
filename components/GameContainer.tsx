@@ -4,7 +4,7 @@ import ScoreDisplay from './ScoreDisplay';
 import { UI_TEXT_TH } from '../constants';
 import PlayButton from './PlayButton';
 import FeedbackMessage from './FeedbackMessage';
-import PianoKeyboard from './PianoKeyboard'; // Import PianoKeyboard
+import PianoKeyboard from './PianoKeyboard';
 
 interface GameContainerProps {
   title: string;
@@ -18,12 +18,16 @@ interface GameContainerProps {
   isSoundPlayed: boolean;
   showFeedback: boolean;
   isCorrect?: boolean;
-  correctAnswerText?: string; // This will be English name
+  correctAnswerText?: string; 
   onNextQuestion: () => void;
   isQuestionAnswered: boolean;
-  children: React.ReactNode; // For option buttons
+  children: React.ReactNode; 
   isSoundPlaying: boolean;
-  highlightedNotes: number[]; // MIDI note numbers to highlight
+  highlightedNotes: number[]; 
+  onPianoNoteClick?: (midiNote: number) => void; // New: For interactive piano
+  isPianoDisabled?: boolean; // New: To disable piano input during sound playback etc.
+  customControlsArea?: React.ReactNode; // New: For buttons like Submit/Clear
+  questionPromptTextKey?: keyof typeof UI_TEXT_TH; // New: For custom prompt like "Press notes"
 }
 
 const GameContainer: React.FC<GameContainerProps> = ({
@@ -41,10 +45,15 @@ const GameContainer: React.FC<GameContainerProps> = ({
   correctAnswerText,
   onNextQuestion,
   isQuestionAnswered,
-  children,
+  children, // Option buttons or custom displays for Melody Recall
   isSoundPlaying,
   highlightedNotes,
+  onPianoNoteClick, // New
+  isPianoDisabled, // New
+  customControlsArea, // New
+  questionPromptTextKey, // New
 }) => {
+  const mainPromptText = questionPromptTextKey ? UI_TEXT_TH[questionPromptTextKey] : UI_TEXT_TH.selectAnswer;
   return (
     <div className="bg-card p-4 md:p-6 rounded-xl shadow-2xl w-full flex flex-col space-y-5 min-h-[calc(100vh-10rem)] md:min-h-[calc(100vh-8rem)] justify-between">
       {/* Header */}
@@ -53,6 +62,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
           <button
             onClick={onBackToMenu}
             className="btn-back"
+            aria-label={UI_TEXT_TH.backToMenu}
           >
             &larr; {UI_TEXT_TH.backToMenu}
           </button>
@@ -76,15 +86,28 @@ const GameContainer: React.FC<GameContainerProps> = ({
         />
 
         <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto">
-            <PianoKeyboard highlightedNotes={highlightedNotes} />
+            <PianoKeyboard 
+                highlightedNotes={highlightedNotes} 
+                onNoteClick={onPianoNoteClick} 
+                disabled={isPianoDisabled || isSoundPlaying || !isSoundPlayed}
+            />
         </div>
         
         <div className="w-full max-w-md">
-            {!isSoundPlayed && <p className="text-center text-slate-300 text-outline-black mb-2 text-sm">{UI_TEXT_TH.playPrompt}</p>}
-            <p className="text-center text-white font-bold text-outline-black mb-3">{UI_TEXT_TH.selectAnswer}</p>
-            <div className={`grid grid-cols-1 ${ children && React.Children.count(children) > 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-1'} gap-3 md:gap-4`}>
+            {!isSoundPlayed && !onPianoNoteClick && <p className="text-center text-slate-300 text-outline-black mb-2 text-sm">{UI_TEXT_TH.playPrompt}</p>}
+            {isSoundPlayed && <p className="text-center text-white font-bold text-outline-black mb-3">{mainPromptText}</p>}
+            
+            {/* Area for OptionButtons OR custom display/controls for Melody Recall */}
+            <div className={`grid grid-cols-1 ${ children && React.Children.count(children) > 2 && !customControlsArea ? 'sm:grid-cols-2' : 'sm:grid-cols-1'} gap-3 md:gap-4`}>
               {children}
             </div>
+
+            {/* Area for Submit/Clear buttons in Melody Recall */}
+            {customControlsArea && (
+              <div className="mt-4 flex justify-center space-x-3">
+                {customControlsArea}
+              </div>
+            )}
         </div>
       </div>
 
@@ -96,11 +119,12 @@ const GameContainer: React.FC<GameContainerProps> = ({
         {isQuestionAnswered && (
           <button
             onClick={onNextQuestion}
-            className="btn-accent btn-lg"
+            className="btn-primary w-full max-w-xs py-3 text-lg"
           >
             {UI_TEXT_TH.nextQuestion} &rarr;
           </button>
         )}
+         {!isQuestionAnswered && <div className="h-12"></div> /* Placeholder to prevent layout shift when button appears */}
       </div>
     </div>
   );

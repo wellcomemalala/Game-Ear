@@ -1,9 +1,11 @@
 
 import React from 'react';
 import { UI_TEXT_TH, LEVEL_THRESHOLDS, PET_DEFINITIONS } from '../../constants';
-import { PlayerData, PetAbilityType } from '../../types';
+import { PlayerData, PetAbilityType, AvatarStyle } from '../../types'; // Added AvatarStyle
 import PetDisplay from '../PetDisplay';
 import { SparklesIcon } from '../icons/SparklesIcon';
+import { UserCircleIcon } from '../icons/UserCircleIcon'; // Added
+import { SquareIcon } from '../icons/SquareIcon'; // Added
 
 interface PlayerStatusBarProps {
   playerData: PlayerData;
@@ -13,15 +15,18 @@ interface PlayerStatusBarProps {
 }
 
 const generateColorFromSeed = (seed: string | undefined | null) => {
-  if (!seed) return '#888888';
+  if (!seed) return '#888888'; // Default color
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     hash = seed.charCodeAt(i) + ((hash << 5) - hash);
-    hash = hash & hash;
+    hash = hash & hash; // Convert to 32bit integer
   }
-  const color = (hash & 0x00FFFFFF).toString(16).toUpperCase();
-  return '#' + '00000'.substring(0, 6 - color.length) + color;
+  const hue = Math.abs(hash % 360); // Ensure hue is positive
+  // Use HSL for more control over saturation and lightness
+  // Keep saturation and lightness relatively high for visibility against dark backgrounds
+  return `hsl(${hue}, 70%, 60%)`;
 };
+
 
 const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({
     playerData,
@@ -29,7 +34,7 @@ const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({
     onPlayWithPet,
     getActivePetAbilityMultiplier,
 }) => {
-  const { playerName, level, xp: currentXp, gCoins, activePetId, pets, petFoodCount } = playerData;
+  const { playerName, level, xp: currentXp, gCoins, activePetId, pets, petFoodCount, avatarStyle } = playerData;
   const currentLevelXpStart = level > 1 ? LEVEL_THRESHOLDS[level - 1] : 0;
   const nextLevelXpTarget = LEVEL_THRESHOLDS[level] ?? currentXp;
 
@@ -47,6 +52,7 @@ const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({
   if (activePetInstance) {
     const petDef = PET_DEFINITIONS.find(def => def.id === activePetInstance.id);
     if (petDef?.ability) {
+      // Pass the full playerData to getActivePetAbilityMultiplier as it might need context beyond just the pet
       const abilityValue = getActivePetAbilityMultiplier(playerData, petDef.ability.type);
       const isAbilityActive = !petDef.ability.condition || petDef.ability.condition(activePetInstance);
       if (isAbilityActive && abilityValue !== 1 && (petDef.ability.type !== PetAbilityType.GCOIN_DISCOUNT_UNLOCKABLES || abilityValue > 0)) {
@@ -57,24 +63,56 @@ const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({
     }
   }
 
-  return (
-    <div className="bg-slate-800/80 backdrop-blur-sm shadow-lg p-3 fixed top-0 left-0 right-0 z-50">
-      <div className="container mx-auto flex flex-wrap justify-between items-center max-w-4xl px-2 sm:px-4 gap-y-2">
-        <div className="flex items-center space-x-2 sm:space-x-3">
+  const renderAvatar = () => {
+    const baseClasses = "w-10 h-10 sm:w-12 sm:h-12 border-2 border-slate-500 flex items-center justify-center text-slate-100 text-xl font-bold text-shadow-strong";
+    
+    switch(avatarStyle) {
+      case AvatarStyle.TYPE_B: // Icon in Square
+        return (
           <div
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-slate-500 flex items-center justify-center text-slate-100 text-xl font-bold"
+            className={`${baseClasses} rounded-md`}
+            style={{ backgroundColor: avatarColor }}
+            title={playerName || "ผู้เล่น"}
+          >
+            <UserCircleIcon className="w-7 h-7 sm:w-8 sm:h-8" />
+          </div>
+        );
+      case AvatarStyle.TYPE_C: // Initials in Square
+        return (
+          <div
+            className={`${baseClasses} rounded-md`}
             style={{ backgroundColor: avatarColor }}
             title={playerName || "ผู้เล่น"}
           >
             {avatarInitial}
           </div>
+        );
+      case AvatarStyle.TYPE_A: // Initials in Circle (Default)
+      default:
+        return (
+          <div
+            className={`${baseClasses} rounded-full`}
+            style={{ backgroundColor: avatarColor }}
+            title={playerName || "ผู้เล่น"}
+          >
+            {avatarInitial}
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="bg-slate-800/80 backdrop-blur-sm shadow-lg p-3 fixed top-0 left-0 right-0 z-50">
+      <div className="container mx-auto flex flex-wrap justify-between items-center max-w-4xl px-2 sm:px-4 gap-y-2">
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          {renderAvatar()}
           <div className="text-xs sm:text-sm">
-            {playerName && <div className="font-bold text-white text-outline-black mb-0.5 truncate max-w-[100px] sm:max-w-[150px]" title={playerName}>{playerName}</div>}
-            <div className="text-outline-black">
+            {playerName && <div className="font-bold text-white text-shadow-strong mb-0.5 truncate max-w-[100px] sm:max-w-[150px]" title={playerName}>{playerName}</div>}
+            <div className="text-shadow-strong">
                 <span className="font-semibold text-sky-300">{UI_TEXT_TH.playerLevel}:</span>
                 <span className="text-white font-bold"> {level}</span>
             </div>
-            <div className="text-slate-100 text-outline-black mt-0.5">
+            <div className="text-slate-300 text-shadow-strong mt-0.5">
               {UI_TEXT_TH.xp}: {currentXp} / {nextLevelXpTarget < currentXp && level >= LEVEL_THRESHOLDS.length ? currentXp : nextLevelXpTarget}
             </div>
             <div className="w-24 sm:w-32 md:w-40 h-2 sm:h-2.5 bg-slate-600 rounded-full overflow-hidden mt-1">
@@ -99,14 +137,14 @@ const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({
               onPlayWithPet={onPlayWithPet}
             />
             {activeAbilityDescription && (
-                 <SparklesIcon className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 text-outline-black" title={activeAbilityDescription} />
+                 <SparklesIcon className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 text-shadow-strong" title={activeAbilityDescription} />
             )}
           </div>
         )}
 
-        <div className="text-xs sm:text-sm font-semibold ml-auto sm:ml-0 pl-2 sm:pl-0">
-          <span className="text-amber-300 font-bold text-outline-black">{UI_TEXT_TH.gCoins}:</span>
-          <span className="text-yellow-300 font-bold text-lg text-outline-black"> {gCoins}</span>
+        <div className="text-xs sm:text-sm font-semibold ml-auto sm:ml-0 pl-2 sm:pl-0 text-shadow-strong">
+          <span className="text-amber-400 font-bold">{UI_TEXT_TH.gCoins}:</span>
+          <span className="text-white font-bold text-lg"> {gCoins}</span>
         </div>
       </div>
     </div>

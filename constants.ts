@@ -1,5 +1,5 @@
 
-import { IntervalInfo, ChordInfo, ThaiUIText, Difficulty, Achievement, AchievementId, PlayerData, GameMode, UnlockedItemType, InstrumentSoundId, InstrumentSoundInfo, ShopItem, PetId, PetDefinition, PetAbilityType, ActivePet, FurnitureItem, FurnitureId, MissionDefinition, MissionId, MissionType, MissionRewardType, MonsterDefinition, MonsterId, MementoDefinition, MementoId, MonsterStage, AppView } from './types'; 
+import { IntervalInfo, ChordInfo, ThaiUIText, Difficulty, Achievement, AchievementId, PlayerData, GameMode, UnlockedItemType, InstrumentSoundId, InstrumentSoundInfo, ShopItem, PetId, PetDefinition, PetAbilityType, ActivePet, FurnitureItem, FurnitureId, MissionDefinition, MissionId, MissionType, MissionRewardType, MonsterDefinition, MonsterId, MementoDefinition, MementoId, MonsterStage, AppView, NoteInfo, AvatarStyle, NPCId, QuestId, ActiveQuest, QuestDefinition, QuestObjectiveType, QuestReward, QuestObjective, ActiveQuestObjective, QuestStatus } from './types'; 
 
 export const A4_FREQUENCY = 440;
 export const A4_MIDI_NOTE = 69;
@@ -16,22 +16,27 @@ export const frequencyToMidiNote = (frequency: number): number => {
   return Math.round(12 * Math.log2(frequency / A4_FREQUENCY) + A4_MIDI_NOTE);
 };
 
+export const midiNoteToFrequency = (midiNote: number): number => {
+    return A4_FREQUENCY * Math.pow(2, (midiNote - A4_MIDI_NOTE) / 12);
+};
 
-// Generates a root note such that the highest possible note (root + MAX_INTERVAL_CHORD_SPAN) is within PIANO_HIGHEST_MIDI_NOTE.
-// Lowest root note: C4 (MIDI 60)
-// Highest root note: G#4 (MIDI 67) -> 67 + 17 (P11) = 84 (C6)
+export const midiNoteToName = (midiNote: number): string => {
+    const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const octave = Math.floor(midiNote / 12) - 1;
+    return `${noteNames[midiNote % 12]}${octave}`;
+};
+
+
 export const getRandomRootFrequency = (): number => {
-  const MIN_ROOT_MIDI = PIANO_LOWEST_MIDI_NOTE; // 60 (C4)
-  const MAX_INTERVAL_CHORD_SPAN = 17; // Max span from P11 interval
-  const MAX_ROOT_MIDI_CALCULATED = PIANO_HIGHEST_MIDI_NOTE - MAX_INTERVAL_CHORD_SPAN; // 84 - 17 = 67 (G#4)
+  const MIN_ROOT_MIDI = PIANO_LOWEST_MIDI_NOTE; 
+  const MAX_INTERVAL_CHORD_SPAN = 17; 
+  const MAX_ROOT_MIDI_CALCULATED = PIANO_HIGHEST_MIDI_NOTE - MAX_INTERVAL_CHORD_SPAN; 
   
-  // Ensure MAX_ROOT_MIDI_CALCULATED is not less than MIN_ROOT_MIDI
-  const MAX_ROOT_MIDI = Math.max(MIN_ROOT_MIDI, MAX_ROOT_MIDI_CALCULATED); // Should be 67
+  const MAX_ROOT_MIDI = Math.max(MIN_ROOT_MIDI, MAX_ROOT_MIDI_CALCULATED); 
 
 
-  const numPossibleRootNotes = MAX_ROOT_MIDI - MIN_ROOT_MIDI + 1; // 67 - 60 + 1 = 8
-  // Generates a random MIDI note from MIN_ROOT_MIDI to MAX_ROOT_MIDI
-  const randomMidiNote = MIN_ROOT_MIDI + Math.floor(Math.random() * numPossibleRootNotes); // 60 to 67
+  const numPossibleRootNotes = MAX_ROOT_MIDI - MIN_ROOT_MIDI + 1; 
+  const randomMidiNote = MIN_ROOT_MIDI + Math.floor(Math.random() * numPossibleRootNotes); 
   
   const semitonesFromA4 = randomMidiNote - A4_MIDI_NOTE; 
   return getFrequency(semitonesFromA4);
@@ -106,11 +111,13 @@ const instrumentSoundShopItems: ShopItem[] = ALL_INSTRUMENT_SOUNDS
   }));
 
 export const MAX_PET_LEVEL = 10;
+const PET_EVOLUTION_LEVEL_DEFAULT = 5;
 
 export const PET_DEFINITIONS: PetDefinition[] = [
   {
     id: PetId.KAKI,
     nameKey: 'petKakiName',
+    iconComponent: 'PetIcon',
     cost: 500,
     descriptionKey: 'petKakiDescription',
     ability: {
@@ -118,11 +125,14 @@ export const PET_DEFINITIONS: PetDefinition[] = [
       value: 1.1,
       descriptionKey: 'petAbilityDesc_PET_XP_BOOST',
       condition: (pet: ActivePet) => pet.level >= 3,
-    }
+    },
+    evolvesTo: PetId.KAKI_EVO1,
+    evolutionLevel: PET_EVOLUTION_LEVEL_DEFAULT,
   },
   {
     id: PetId.PLANIN,
     nameKey: 'petPlaninName',
+    iconComponent: 'PetIcon',
     cost: 750,
     descriptionKey: 'petPlaninDescription',
     ability: {
@@ -130,11 +140,14 @@ export const PET_DEFINITIONS: PetDefinition[] = [
       value: 0.05,
       descriptionKey: 'petAbilityDesc_GCOIN_DISCOUNT_UNLOCKABLES',
       condition: (pet: ActivePet) => pet.level >= 5,
-    }
+    },
+    evolvesTo: PetId.PLANIN_EVO1,
+    evolutionLevel: PET_EVOLUTION_LEVEL_DEFAULT,
   },
   {
     id: PetId.MOOTOD,
     nameKey: 'petMootodName',
+    iconComponent: 'PetIcon',
     cost: 750,
     descriptionKey: 'petMootodDescription',
     ability: {
@@ -142,11 +155,52 @@ export const PET_DEFINITIONS: PetDefinition[] = [
       value: 1.05,
       descriptionKey: 'petAbilityDesc_XP_BOOST_TRAINING',
       condition: (pet: ActivePet) => pet.level >= 5,
-    }
+    },
+    evolvesTo: PetId.MOOTOD_EVO1,
+    evolutionLevel: PET_EVOLUTION_LEVEL_DEFAULT,
+  },
+  {
+    id: PetId.KAKI_EVO1,
+    nameKey: 'petKakiEvo1Name',
+    iconComponent: 'KakiEvo1Icon', 
+    cost: 0, 
+    descriptionKey: 'petKakiEvo1Description',
+    ability: {
+      type: PetAbilityType.PET_XP_BOOST,
+      value: 1.2, 
+      descriptionKey: 'petAbilityDesc_PET_XP_BOOST',
+      condition: (pet: ActivePet) => pet.level >= 3, 
+    },
+  },
+  {
+    id: PetId.PLANIN_EVO1,
+    nameKey: 'petPlaninEvo1Name',
+    iconComponent: 'PlaninEvo1Icon', 
+    cost: 0,
+    descriptionKey: 'petPlaninEvo1Description',
+    ability: {
+      type: PetAbilityType.GCOIN_DISCOUNT_UNLOCKABLES,
+      value: 0.08, 
+      descriptionKey: 'petAbilityDesc_GCOIN_DISCOUNT_UNLOCKABLES',
+      condition: (pet: ActivePet) => pet.level >= 5,
+    },
+  },
+  {
+    id: PetId.MOOTOD_EVO1,
+    nameKey: 'petMootodEvo1Name',
+    iconComponent: 'MootodEvo1Icon', 
+    cost: 0,
+    descriptionKey: 'petMootodEvo1Description',
+    ability: {
+      type: PetAbilityType.XP_BOOST_TRAINING,
+      value: 1.08, 
+      descriptionKey: 'petAbilityDesc_XP_BOOST_TRAINING',
+      condition: (pet: ActivePet) => pet.level >= 5,
+    },
   },
 ];
 
-export const PET_ADOPTION_COST = 500;
+export const PET_ADOPTION_COST = 500; 
 export const MAX_PET_HUNGER = 100;
 export const PET_HUNGER_DECAY_PER_HOUR = 5;
 export const PET_FOOD_HUNGER_VALUE = 40;
@@ -155,7 +209,7 @@ export const PET_FOOD_ID = 'BUDDY_BITES_FOOD';
 export const PET_XP_PER_CORRECT_ANSWER = 2;
 export const PET_XP_PER_FEEDING = 10;
 export const PET_XP_PER_DAILY_LOGIN = 15;
-export const PET_LEVEL_THRESHOLDS = [0, 50, 120, 200, 300, 450, 600, 800, 1000, 1250, 1500];
+export const PET_LEVEL_THRESHOLDS = [0, 50, 120, 200, 300, 450, 600, 800, 1000, 1250, 1500]; 
 export const MAX_PET_HAPPINESS = 100;
 export const HAPPINESS_PER_FEEDING = 20;
 export const HAPPINESS_PER_PLAY = 25;
@@ -167,6 +221,9 @@ export const HAPPINESS_DECAY_ON_BOREDOM = 2;
 export const PET_SPECIAL_REQUEST_CHANCE = 0.1;
 export const PET_SPECIAL_REQUEST_REWARD_XP = 25;
 export const PET_SPECIAL_REQUEST_REWARD_HAPPINESS = 30;
+export const PET_SPECIAL_REQUEST_REWARD_XP_EVOLVED = Math.round(PET_SPECIAL_REQUEST_REWARD_XP * 1.5); 
+export const PET_SPECIAL_REQUEST_REWARD_HAPPINESS_EVOLVED = Math.round(PET_SPECIAL_REQUEST_REWARD_HAPPINESS * 1.2);
+
 
 export const PET_FOOD_ITEM: ShopItem = {
   id: PET_FOOD_ID,
@@ -215,7 +272,6 @@ export const DAILY_MISSIONS_TO_PICK = 3;
 export const WEEKLY_MISSIONS_TO_PICK = 2;
 
 export const MISSION_DEFINITIONS: MissionDefinition[] = [
-  // Existing missions
   { id: MissionId.DAILY_TRAIN_M3_5_TIMES, type: MissionType.TRAIN_ITEM_CORRECT_COUNT, descriptionKey: 'mission_DAILY_TRAIN_M3_5_TIMES_desc', targetValue: 5, targetItemType: GameMode.INTERVALS, targetItemId: 'M3', rewards: [{ type: MissionRewardType.PLAYER_XP, amount: 20 }, { type: MissionRewardType.GCOINS, amount: 10 }], frequency: 'daily' },
   { id: MissionId.DAILY_STREAK_3_CHORDS, type: MissionType.TRAINING_STREAK, descriptionKey: 'mission_DAILY_STREAK_3_CHORDS_desc', targetValue: 3, gameModeScope: GameMode.CHORDS, rewards: [{ type: MissionRewardType.PLAYER_XP, amount: 25 }, { type: MissionRewardType.GCOINS, amount: 15 }], frequency: 'daily' },
   { id: MissionId.DAILY_FEED_PET_1_TIME, type: MissionType.FEED_PET_COUNT, descriptionKey: 'mission_DAILY_FEED_PET_1_TIME_desc', targetValue: 1, rewards: [{ type: MissionRewardType.PET_XP, amount: 10 }, { type: MissionRewardType.GCOINS, amount: 5 }], frequency: 'daily' },
@@ -225,7 +281,6 @@ export const MISSION_DEFINITIONS: MissionDefinition[] = [
   { id: MissionId.WEEKLY_ANSWER_20_INTERVALS_CORRECT, type: MissionType.TRAIN_ITEM_CORRECT_COUNT, descriptionKey: 'mission_WEEKLY_ANSWER_20_INTERVALS_CORRECT_desc', targetValue: 20, targetItemType: GameMode.INTERVALS, rewards: [{ type: MissionRewardType.PLAYER_XP, amount: 100 }, { type: MissionRewardType.GCOINS, amount: 70 }], frequency: 'weekly' },
   { id: MissionId.WEEKLY_EARN_250_GCOINS_TOTAL, type: MissionType.EARN_GCOINS_TOTAL, descriptionKey: 'mission_WEEKLY_EARN_250_GCOINS_TOTAL_desc', targetValue: 250, rewards: [{ type: MissionRewardType.PLAYER_XP, amount: 120 }, { type: MissionRewardType.GCOINS, amount: 80 }], frequency: 'weekly' },
   
-  // New Diverse Missions
   { id: MissionId.DAILY_CHALLENGE_SLIME, type: MissionType.START_MONSTER_BATTLE, descriptionKey: 'mission_DAILY_CHALLENGE_SLIME_desc', targetValue: 1, targetMonsterId: MonsterId.MONO_NOTE_SLIME, rewards: [{ type: MissionRewardType.PLAYER_XP, amount: 25 }, { type: MissionRewardType.GCOINS, amount: 10 }], frequency: 'daily' },
   { id: MissionId.DAILY_PET_MAX_HAPPINESS, type: MissionType.PET_REACH_STAT, descriptionKey: 'mission_DAILY_PET_MAX_HAPPINESS_desc', targetValue: MAX_PET_HAPPINESS, targetPetStat: 'HAPPINESS', rewards: [{ type: MissionRewardType.PET_XP, amount: 20 }, { type: MissionRewardType.GCOINS, amount: 10 }], frequency: 'daily' },
   { id: MissionId.DAILY_PLAY_NOTES_FREESTYLE_10, type: MissionType.PLAY_NOTES_FREESTYLE_COUNT, descriptionKey: 'mission_DAILY_PLAY_NOTES_FREESTYLE_10_desc', targetValue: 10, rewards: [{ type: MissionRewardType.PLAYER_XP, amount: 15 }, { type: MissionRewardType.GCOINS, amount: 5 }], frequency: 'daily' },
@@ -319,15 +374,39 @@ export const ALL_MEMENTOS: MementoDefinition[] = [
   { id: MementoId.SIREN_SCALE, nameKey: 'memento_SIREN_SCALE_name', descriptionKey: 'memento_SIREN_SCALE_desc', iconComponent: 'MementoIconPlaceholder', monsterId: MonsterId.HARMONY_SIREN }, 
 ];
 
+export const QUEST_DEFINITIONS: QuestDefinition[] = [
+  {
+    id: QuestId.LOST_MUSIC_SHEET_MUSIC_MASTER,
+    titleKey: 'quest_LOST_MUSIC_SHEET_MUSIC_MASTER_title',
+    descriptionKey: 'quest_LOST_MUSIC_SHEET_MUSIC_MASTER_desc',
+    npcId: NPCId.MUSIC_MASTER,
+    objectives: [
+      { descriptionKey: 'quest_LOST_MUSIC_SHEET_MUSIC_MASTER_obj1', type: QuestObjectiveType.TALK_TO_NPC, targetId: NPCId.MUSIC_MASTER },
+      { descriptionKey: 'quest_LOST_MUSIC_SHEET_MUSIC_MASTER_obj2', type: QuestObjectiveType.COLLECT_ITEM, targetId: 'LOST_MUSIC_SHEET_ITEM' }, // Placeholder item ID
+      // { descriptionKey: 'quest_LOST_MUSIC_SHEET_MUSIC_MASTER_obj3', type: QuestObjectiveType.DEFEAT_MONSTER, targetId: MonsterId.INTERVAL_IMP }, // Example if a monster guards it
+    ],
+    rewards: [
+      { type: 'gcoins', amount: 100 },
+      { type: 'xp', amount: 50 },
+      // { type: 'song', songId: 'ANCIENT_MELODY_SONG' } // Placeholder song reward
+    ],
+    minPlayerLevel: 3,
+  },
+  // Add more quest definitions here
+];
+
 export const INITIAL_ACHIEVEMENTS: Achievement[] = [
   { id: AchievementId.FIRST_CORRECT_INTERVAL, nameKey: 'ach_FIRST_CORRECT_INTERVAL_name', descriptionKey: 'ach_FIRST_CORRECT_INTERVAL_desc', unlocked: false },
   { id: AchievementId.FIRST_CORRECT_CHORD, nameKey: 'ach_FIRST_CORRECT_CHORD_name', descriptionKey: 'ach_FIRST_CORRECT_CHORD_desc', unlocked: false },
+  { id: AchievementId.FIRST_CORRECT_MELODY, nameKey: 'ach_FIRST_CORRECT_MELODY_name', descriptionKey: 'ach_FIRST_CORRECT_MELODY_desc', unlocked: false },
   { id: AchievementId.REACH_LEVEL_5, nameKey: 'ach_REACH_LEVEL_5_name', descriptionKey: 'ach_REACH_LEVEL_5_desc', unlocked: false },
   { id: AchievementId.REACH_LEVEL_10, nameKey: 'ach_REACH_LEVEL_10_name', descriptionKey: 'ach_REACH_LEVEL_10_desc', unlocked: false },
   { id: AchievementId.REACH_LEVEL_15, nameKey: 'ach_REACH_LEVEL_15_name', descriptionKey: 'ach_REACH_LEVEL_15_desc', unlocked: false },
   { id: AchievementId.STREAK_5, nameKey: 'ach_STREAK_5_name', descriptionKey: 'ach_STREAK_5_desc', unlocked: false },
   { id: AchievementId.STREAK_10, nameKey: 'ach_STREAK_10_name', descriptionKey: 'ach_STREAK_10_desc', unlocked: false },
   { id: AchievementId.STREAK_15, nameKey: 'ach_STREAK_15_name', descriptionKey: 'ach_STREAK_15_desc', unlocked: false },
+  { id: AchievementId.MELODY_RECALL_STREAK_3, nameKey: 'ach_MELODY_RECALL_STREAK_3_name', descriptionKey: 'ach_MELODY_RECALL_STREAK_3_desc', unlocked: false },
+  { id: AchievementId.MELODY_RECALL_STREAK_7, nameKey: 'ach_MELODY_RECALL_STREAK_7_name', descriptionKey: 'ach_MELODY_RECALL_STREAK_7_desc', unlocked: false },
   { id: AchievementId.COLLECT_100_GCOINS, nameKey: 'ach_COLLECT_100_GCOINS_name', descriptionKey: 'ach_COLLECT_100_GCOINS_desc', unlocked: false },
   { id: AchievementId.COLLECT_500_GCOINS, nameKey: 'ach_COLLECT_500_GCOINS_name', descriptionKey: 'ach_COLLECT_500_GCOINS_desc', unlocked: false },
   { id: AchievementId.COLLECT_1000_GCOINS, nameKey: 'ach_COLLECT_1000_GCOINS_name', descriptionKey: 'ach_COLLECT_1000_GCOINS_desc', unlocked: false },
@@ -338,10 +417,11 @@ export const INITIAL_ACHIEVEMENTS: Achievement[] = [
   { id: AchievementId.PET_REACH_LEVEL_5, nameKey: 'ach_PET_REACH_LEVEL_5_name', descriptionKey: 'ach_PET_REACH_LEVEL_5_desc', unlocked: false },
   { id: AchievementId.PET_MAX_HAPPINESS, nameKey: 'ach_PET_MAX_HAPPINESS_name', descriptionKey: 'ach_PET_MAX_HAPPINESS_desc', unlocked: false },
   { id: AchievementId.PET_PLAY_10_TIMES, nameKey: 'ach_PET_PLAY_10_TIMES_name', descriptionKey: 'ach_PET_PLAY_10_TIMES_desc', unlocked: false, milestone: PET_INTERACTION_ACHIEVEMENT_MILESTONE },
-  { id: AchievementId.PET_COLLECTOR, nameKey: 'ach_PET_COLLECTOR_name', descriptionKey: 'ach_PET_COLLECTOR_desc', unlocked: false, milestone: PET_DEFINITIONS.length },
+  { id: AchievementId.PET_COLLECTOR, nameKey: 'ach_PET_COLLECTOR_name', descriptionKey: 'ach_PET_COLLECTOR_desc', unlocked: false, milestone: PET_DEFINITIONS.filter(p => p.cost > 0).length }, 
   { id: AchievementId.PET_MAX_LEVEL_FIRST, nameKey: 'ach_PET_MAX_LEVEL_FIRST_name', descriptionKey: 'ach_PET_MAX_LEVEL_FIRST_desc', unlocked: false },
   { id: AchievementId.PET_CUSTOMIZED_FIRST, nameKey: 'ach_PET_CUSTOMIZED_FIRST_name', descriptionKey: 'ach_PET_CUSTOMIZED_FIRST_desc', unlocked: false },
   { id: AchievementId.PET_FULFILL_REQUEST_FIRST, nameKey: 'ach_PET_FULFILL_REQUEST_FIRST_name', descriptionKey: 'ach_PET_FULFILL_REQUEST_FIRST_desc', unlocked: false },
+  { id: AchievementId.FIRST_PET_EVOLUTION, nameKey: 'ach_FIRST_PET_EVOLUTION_name', descriptionKey: 'ach_FIRST_PET_EVOLUTION_desc', unlocked: false },
   { id: AchievementId.M3_NOVICE, nameKey: 'ach_M3_NOVICE_name', descriptionKey: 'ach_M3_NOVICE_desc', unlocked: false, milestone: 10, itemId: 'M3', itemType: GameMode.INTERVALS },
   { id: AchievementId.M3_ADEPT, nameKey: 'ach_M3_ADEPT_name', descriptionKey: 'ach_M3_ADEPT_desc', unlocked: false, milestone: 50, itemId: 'M3', itemType: GameMode.INTERVALS },
   { id: AchievementId.MAJ_TRIAD_NOVICE, nameKey: 'ach_MAJ_TRIAD_NOVICE_name', descriptionKey: 'ach_MAJ_TRIAD_NOVICE_desc', unlocked: false, milestone: 10, itemId: 'maj', itemType: GameMode.CHORDS },
@@ -363,6 +443,8 @@ export const INITIAL_ACHIEVEMENTS: Achievement[] = [
   { id: AchievementId.DEFEAT_RHYTHM_LORD, nameKey: 'ach_DEFEAT_RHYTHM_LORD_name', descriptionKey: 'ach_DEFEAT_RHYTHM_LORD_desc', unlocked: false }, 
   { id: AchievementId.DEFEAT_HARMONY_SIREN, nameKey: 'ach_DEFEAT_HARMONY_SIREN_name', descriptionKey: 'ach_DEFEAT_HARMONY_SIREN_desc', unlocked: false }, 
   { id: AchievementId.COLLECT_ALL_MEMENTOS, nameKey: 'ach_COLLECT_ALL_MEMENTOS_name', descriptionKey: 'ach_COLLECT_ALL_MEMENTOS_desc', unlocked: false, milestone: ALL_MEMENTOS.length },
+  { id: AchievementId.QUEST_ACCEPTED_FIRST, nameKey: 'ach_QUEST_ACCEPTED_FIRST_name', descriptionKey: 'ach_QUEST_ACCEPTED_FIRST_desc', unlocked: false },
+  { id: AchievementId.QUEST_COMPLETED_FIRST, nameKey: 'ach_QUEST_COMPLETED_FIRST_name', descriptionKey: 'ach_QUEST_COMPLETED_FIRST_desc', unlocked: false },
 ];
 
 export const INITIAL_PLAYER_DATA: PlayerData = {
@@ -373,9 +455,12 @@ export const INITIAL_PLAYER_DATA: PlayerData = {
   unlockedAchievementIds: [],
   intervalQuestionsAnswered: 0,
   chordQuestionsAnswered: 0,
+  melodyRecallQuestionsAnswered: 0, 
   highestStreak: 0,
+  melodyRecallHighestStreak: 0, 
   intervalCorrectCounts: {},
   chordCorrectCounts: {},
+  melodyRecallCorrectCounts: {}, 
   lastLoginDate: null,
   unlockedMusicalItemIds: [],
   selectedInstrumentSoundId: InstrumentSoundId.SINE,
@@ -394,14 +479,20 @@ export const INITIAL_PLAYER_DATA: PlayerData = {
   completedDailyMissionCountForWeekly: 0,
   defeatedMonsterIds: [], 
   collectedMementos: [], 
+  highlightPianoOnPlay: true,
+  avatarStyle: AvatarStyle.TYPE_A, 
+  activeQuests: [], 
+  inventory: [], 
 };
 
 export const UI_TEXT_TH: ThaiUIText = {
   appName: "เกมฝึกทักษะการฟัง",
   intervalTraining: "ฝึกจำขั้นคู่เสียง",
   chordTraining: "ฝึกจำคอร์ด",
+  melodyRecallTraining: "ฝึกทักษะจำทำนอง", 
+  melodyRecallTrainingButton: "ห้องฝึกเพลงตามสั่ง", 
   playPrompt: "กดปุ่มรูปลำโพงเพื่อฟังเสียง",
-  selectAnswer: "เลือกคำตอบที่ถูกต้อง:",
+  selectAnswer: "เลือกคำตอบที่ถูกต้อง:", 
   correct: "ถูกต้อง!",
   incorrect: "ผิด!",
   nextQuestion: "คำถามถัดไป",
@@ -416,14 +507,18 @@ export const UI_TEXT_TH: ThaiUIText = {
   loading: "กำลังโหลด...",
   difficulty: "ระดับความยาก",
   difficultyPrompt: "เลือกระดับความยาก:",
-  easy: "ง่าย",
-  medium: "ปานกลาง",
-  hard: "ยาก",
+  easy: "ง่าย (3 โน้ต)", 
+  medium: "ปานกลาง (4 โน้ต)", 
+  hard: "ยาก (5 โน้ต)", 
   audioContextPrompt: "เกมนี้ต้องใช้เสียง โปรดกดปุ่ม \"เริ่มเกม\" เพื่อเปิดใช้งานเสียง",
   audioNotSupported: "เบราว์เซอร์ของคุณไม่รองรับ Web Audio API ที่จำเป็นสำหรับเกมนี้",
   loadingAudio: "กำลังเตรียมระบบเสียง...",
   currentStreak: "สถิติทำถูกติดต่อกัน:",
   highScore: "คะแนนสูงสุด:",
+  submitAnswer: "ส่งคำตอบ", 
+  clearInput: "ล้าง", 
+  notesPlayedPrompt: "กดโน้ตบนเปียโนตามทำนองที่ได้ยิน:", 
+  notesYouPlayed: "โน้ตที่คุณเล่น:", 
 
   playerLevel: "เลเวล",
   xp: "XP",
@@ -438,6 +533,7 @@ export const UI_TEXT_TH: ThaiUIText = {
   masteryProgress: "ความคืบหน้าการฝึกฝน",
   intervalsMastery: "ความเชี่ยวชาญขั้นคู่เสียง",
   chordsMastery: "ความเชี่ยวชาญคอร์ด",
+  melodyRecallMastery: "ความเชี่ยวชาญการจำทำนอง", 
   correctAnswersLabel: "ตอบถูก:",
   nextMilestoneLabel: "เป้าหมายถัดไป:",
   forAchievementText: "สำหรับ",
@@ -469,6 +565,14 @@ export const UI_TEXT_TH: ThaiUIText = {
   viewShop: "ร้านค้า",
   viewUnlockables: "ปลดล็อกเนื้อหา",
   viewSettings: "ตั้งค่า",
+  settingHighlightPianoOnPlayLabel: "ไฮไลท์เปียโนเมื่อเล่นโจทย์", 
+  settingHighlightPianoOnPlayDesc: "เมื่อเปิดใช้งาน ลิ่มเปียโนที่เกี่ยวข้องกับโจทย์จะถูกไฮไลท์ขณะเล่นเสียง", 
+  avatarCustomizationTitle: "ปรับแต่งตัวละคร",
+  avatarStyleLabel: "เลือกสไตล์อวตาร:",
+  avatarStyleTypeA: "เริ่มต้น (วงกลม)",
+  avatarStyleTypeB: "ไอคอน (สี่เหลี่ยม)",
+  avatarStyleTypeC: "สี่เหลี่ยม",
+
 
   petAdoptionCenterTitle: "ศูนย์รับเลี้ยงเพื่อนซี้",
   adoptPetButton: "รับเลี้ยง {petName}",
@@ -484,9 +588,13 @@ export const UI_TEXT_TH: ThaiUIText = {
   petKakiName: "คากิ",
   petPlaninName: "ปลานิล",
   petMootodName: "หมูทอด",
-  petHoodeeName: "น้องหูดี (เก่า)",
+  petHoodeeName: "น้องหูดี (เก่า)", 
   petRhythmoName: "น้องจังหวะ (เก่า)",
   petMelodiaName: "น้องทำนอง (เก่า)",
+  petKakiEvo1Name: "คากิ ร่างสุดยอด",
+  petPlaninEvo1Name: "ปลานิล ร่างสุดยอด",
+  petMootodEvo1Name: "หมูทอด ร่างสุดยอด",
+
 
   viewPetAdoption: "ศูนย์เพื่อนซี้",
   petStatusTitle: "เพื่อนซี้ของฉัน",
@@ -502,6 +610,8 @@ export const UI_TEXT_TH: ThaiUIText = {
   petLevelUpNotificationTitle: "เพื่อนซี้เลเวลอัพ!",
   petLevelUpNotificationMessage: "{petName} เลเวลอัพเป็น {level} แล้วนะ!",
   petMaxHappinessMessage: "{petName} ดูมีความสุขสุดๆ ไปเลย!",
+  petEvolutionTitle: "พัฒนาร่างสำเร็จ!",
+  petEvolutionMessage: "{petName} พัฒนาร่างเป็น {evolvedPetName} แล้ว! เท่สุดๆไปเลย!",
 
   petManagementTitle: "จัดการเพื่อนซี้",
   selectActivePetLabel: "เลือกเพื่อนซี้ตัวโปรด:",
@@ -529,6 +639,9 @@ export const UI_TEXT_TH: ThaiUIText = {
   petHoodeeDescription: "น้องหูดี ผู้รักการฟังเสียงทุกชนิด (เก่า)",
   petRhythmoDescription: "น้องจังหวะ ชอบดนตรีที่มีชีวิตชีวา (เก่า)",
   petMelodiaDescription: "น้องทำนอง หลงใหลในท่วงทำนอง (เก่า)",
+  petKakiEvo1Description: "คากิในร่างพัฒนา พร้อมพลังแห่งเสียงที่เฉียบคมยิ่งขึ้น!",
+  petPlaninEvo1Description: "ปลานิลในร่างพัฒนา คล่องแคล่วและเชี่ยวชาญด้านเศรษฐศาสตร์ดนตรี!",
+  petMootodEvo1Description: "หมูทอดในร่างพัฒนา เต็มเปี่ยมด้วยแรงบันดาลใจจากท่วงทำนอง!",
 
   playerNameInputTitle: "ตั้งชื่อผู้เล่น",
   enterPlayerNamePrompt: "กรุณาตั้งชื่อผู้เล่นของคุณ:",
@@ -682,13 +795,16 @@ export const UI_TEXT_TH: ThaiUIText = {
   ach_PET_PLAY_10_TIMES_desc: "คุณเล่นกับเพื่อนซี้ของคุณครบ 10 ครั้งแล้ว",
 
   ach_PET_COLLECTOR_name: "นักสะสมเพื่อนซี้",
-  ach_PET_COLLECTOR_desc: `รับเลี้ยงเพื่อนซี้ครบ ${PET_DEFINITIONS.length} แบบ`,
+  ach_PET_COLLECTOR_desc: `รับเลี้ยงเพื่อนซี้ครบ ${PET_DEFINITIONS.filter(p => p.cost > 0).length} แบบ`,
   ach_PET_MAX_LEVEL_FIRST_name: "เพื่อนซี้ถึงขีดสุด!",
   ach_PET_MAX_LEVEL_FIRST_desc: `เลี้ยงเพื่อนซี้ตัวใดตัวหนึ่งจนถึงเลเวล ${MAX_PET_LEVEL}`,
   ach_PET_CUSTOMIZED_FIRST_name: "เพื่อนซี้แต่งสวย",
   ach_PET_CUSTOMIZED_FIRST_desc: "แต่งตัวให้เพื่อนซี้เป็นครั้งแรก",
   ach_PET_FULFILL_REQUEST_FIRST_name: "ผู้ฟังใจดี",
   ach_PET_FULFILL_REQUEST_FIRST_desc: "ทำตามคำขอพิเศษของเพื่อนซี้สำเร็จเป็นครั้งแรก",
+  ach_FIRST_PET_EVOLUTION_name: "เพื่อนซี้พัฒนาร่าง!",
+  ach_FIRST_PET_EVOLUTION_desc: "เพื่อนซี้ของคุณพัฒนาร่างเป็นครั้งแรก!",
+
 
   ach_M3_NOVICE_name: "นักฟัง Major Third ระดับต้น",
   ach_M3_ADEPT_name: "ผู้เชี่ยวชาญ Major Third",
@@ -699,15 +815,21 @@ export const UI_TEXT_TH: ThaiUIText = {
 
   ach_FIRST_CORRECT_INTERVAL_name: "ผู้เริ่มต้นฝึกขั้นคู่",
   ach_FIRST_CORRECT_CHORD_name: "ผู้เริ่มต้นฝึกคอร์ด",
+  ach_FIRST_CORRECT_MELODY_name: "นักแกะเพลงฝึกหัด", 
   ach_REACH_LEVEL_5_name: "ถึงเลเวล 5 แล้ว!",
   ach_STREAK_5_name: "เซียน Streak (5 ครั้ง)",
+  ach_MELODY_RECALL_STREAK_3_name: "จำแม่น (3 ครั้ง)", 
+  ach_MELODY_RECALL_STREAK_7_name: "หูทองคำ (7 ครั้ง)", 
   ach_COLLECT_100_GCOINS_name: "นักสะสม G-Coin (100)",
   ach_LISTEN_MASTER_LV1_name: "ผู้เชี่ยวชาญการฟัง LV1 (Placeholder)",
 
   ach_FIRST_CORRECT_INTERVAL_desc: "ตอบคำถามเกี่ยวกับขั้นคู่เสียงถูกเป็นครั้งแรก",
   ach_FIRST_CORRECT_CHORD_desc: "ตอบคำถามเกี่ยวกับคอร์ดถูกเป็นครั้งแรก",
+  ach_FIRST_CORRECT_MELODY_desc: "จำทำนองเพลงสั้นๆ ถูกเป็นครั้งแรก", 
   ach_REACH_LEVEL_5_desc: "มีพัฒนาการจนถึงเลเวล 5",
   ach_STREAK_5_desc: "สุดยอด! ตอบถูกติดต่อกัน 5 ครั้ง",
+  ach_MELODY_RECALL_STREAK_3_desc: "จำทำนองถูกติดต่อกัน 3 ครั้ง", 
+  ach_MELODY_RECALL_STREAK_7_desc: "สุดยอด! จำทำนองถูกติดต่อกัน 7 ครั้ง", 
   ach_COLLECT_100_GCOINS_desc: "สะสม G-Coins ครบ 100 เหรียญแล้ว",
   ach_LISTEN_MASTER_LV1_desc: "บรรลุเป้าหมายการฟังระดับ 1 (Placeholder)",
   ach_M3_NOVICE_desc: "ตอบขั้นคู่ Major Third ถูก 10 ครั้ง",
@@ -738,13 +860,17 @@ export const UI_TEXT_TH: ThaiUIText = {
   ach_DEFEAT_HARMONY_SIREN_desc: "เอาชนะไซเรนเสียงประสานผู้ลึกลับได้", 
   ach_COLLECT_ALL_MEMENTOS_name: "นักสะสมของที่ระลึกอสูร",
   ach_COLLECT_ALL_MEMENTOS_desc: "สะสมของที่ระลึกจากอสูรทุกตัวได้ครบ!",
+  ach_QUEST_ACCEPTED_FIRST_name: "นักผจญภัยมือใหม่",
+  ach_QUEST_ACCEPTED_FIRST_desc: "รับเควสแรกของคุณแล้ว! การเดินทางเริ่มต้นขึ้น",
+  ach_QUEST_COMPLETED_FIRST_name: "ผู้ช่วยแห่งเสียงเพลง",
+  ach_QUEST_COMPLETED_FIRST_desc: "ทำเควสแรกสำเร็จ! คุณคือความหวังของโลกดนตรี",
+
 
   freestyleJamRoomTitle: "ห้องซ้อมอิสระ",
   freestyleJamRoomDescription: "ทดลองเล่นเสียงต่างๆ ได้ตามใจคุณ!",
   selectSoundLabel: "เลือกเสียงเครื่องดนตรี:",
   freestyleJamRoomButton: "ห้องซ้อมอิสระ",
 
-  // Game Guide Page
   gameGuideTitle: "คู่มือการเล่น",
   gameGuide_MainGoal_Title: "เป้าหมายหลักของเกม",
   gameGuide_MainGoal_Desc: "เกมนี้จะช่วยให้คุณพัฒนาทักษะการฟังเสียงดนตรี โดยเน้นที่การจดจำขั้นคู่เสียงและคอร์ดต่างๆ เพื่อให้คุณเป็นนักดนตรีที่เก่งขึ้น!",
@@ -766,7 +892,7 @@ export const UI_TEXT_TH: ThaiUIText = {
   gameGuide_Pets_Care_Title: "การดูแล:",
   gameGuide_Pets_Care_Desc: "ให้อาหารและเล่นกับเพื่อนซี้เพื่อเพิ่มความสุขและ XP ให้พวกเขา อย่าลืมดูแลไม่ให้หิวนะ!",
   gameGuide_Pets_Abilities_Title: "ความสามารถพิเศษ:",
-  gameGuide_Pets_Abilities_Desc: "เพื่อนซี้แต่ละตัวมีความสามารถพิเศษที่ช่วยให้คุณได้เปรียบในเกม เช่น ลดราคาสินค้า หรือเพิ่ม XP ที่ได้รับ",
+  gameGuide_Pets_Abilities_Desc: "เพื่อนซี้แต่ละตัวมีความสามารถพิเศษที่ช่วยให้คุณได้เปรียบในเกม เช่น ลดราคาสินค้า หรือเพิ่ม XP ที่ได้รับ เพื่อนซี้บางตัวสามารถพัฒนาร่างเมื่อถึงเลเวลที่กำหนดเพื่อเพิ่มความสามารถได้ด้วย!",
   gameGuide_MyHome_Title: "บ้านของฉัน",
   gameGuide_MyHome_Upgrade_Title: "อัปเกรดบ้าน:",
   gameGuide_MyHome_Upgrade_Desc: "ใช้ G-Coins อัปเกรดบ้านเพื่อรับโบนัสถาวร เช่น G-Coins เพิ่มจากรางวัลล็อกอินรายวัน หรือ XP เพิ่มจากการฝึกฝน",
@@ -793,6 +919,40 @@ export const UI_TEXT_TH: ThaiUIText = {
   gameGuide_Progression_Monsterpedia_Title: "สมุดมอนสเตอร์:",
   gameGuide_Progression_Monsterpedia_Desc: "ดูข้อมูลอสูรทั้งหมดที่คุณเคยเจอและของที่ระลึกที่คุณสะสมได้",
   viewGameGuide: "คู่มือการเล่น",
+
+  npcHubTitle: "ศูนย์รวม NPC",
+  questInteractionTitle: "สนทนาเควส",
+  npc_MUSIC_MASTER_name: "ปรมาจารย์ดนตรี",
+  npc_MEMENTO_COLLECTOR_name: "นักสะสม Memento",
+  npc_ZALAY_BEAT_name: "Zalay Beat",
+  
+  quest_LOST_MUSIC_SHEET_MUSIC_MASTER_title: "โน้ตเพลงที่หายไป",
+  quest_LOST_MUSIC_SHEET_MUSIC_MASTER_desc: "ปรมาจารย์ดนตรีทำโน้ตเพลงสำคัญหายไป! ดูเหมือนว่าเขาจะต้องการความช่วยเหลือจากนักดนตรีผู้มีความสามารถเช่นคุณในการตามหา",
+  quest_LOST_MUSIC_SHEET_MUSIC_MASTER_obj1: "พูดคุยกับปรมาจารย์ดนตรีเพื่อรับทราบรายละเอียด",
+  quest_LOST_MUSIC_SHEET_MUSIC_MASTER_obj2: "ตามหาโน้ตเพลงโบราณที่หายไป",
+  // quest_LOST_MUSIC_SHEET_MUSIC_MASTER_obj3: "เอาชนะมอนสเตอร์ที่เฝ้าโน้ตเพลง",
+
+
+  quest_NEW_PET_TRAINING_NPC_GENERIC_title: "ฝึกสัตว์เลี้ยงตัวใหม่", 
+  
+  viewNPCHub: "ศูนย์รวม NPC",
+  questAcceptButton: "รับเควส",
+  questInProgressLabel: "กำลังดำเนินเควส...",
+  questCompletedLabel: "เควสสำเร็จ!",
+  questClaimRewardButton: "รับรางวัล",
+  questRewardsLabel: "รางวัล:",
+  questObjectivesLabel: "เป้าหมาย:",
+  questStartedNotificationTitle: "เควสเริ่มขึ้นแล้ว!",
+  questObjectiveCompletedNotificationTitle: "เป้าหมายสำเร็จ!",
+  questCompletedNotificationTitle: "เควสสำเร็จ!",
+  questRewardClaimedNotificationTitle: "รับรางวัลเควสแล้ว!",
+  npcGenericGreeting: "สวัสดี มีอะไรให้ช่วยหรือ?",
+  npcMusicMasterGreeting: "ยินดีต้อนรับนักดนตรีหนุ่มสาว! มีอะไรให้ข้าช่วยหรือไม่?",
+  npcMementoCollectorGreeting: "ของเก่าเล่าเรื่องราว... สนใจจะฟังหรือแลกเปลี่ยนอะไรไหม?",
+  npcZalayBeatGreeting: "การเชื่อมต่อเสร็จสมบูรณ์... ต้องการความช่วยเหลือด้านเทคโนโลยีหรือดนตรีขั้นสูงหรือ?",
+  npcMusicMasterLostSheetDialogue: "โอ้ แย่แล้ว! ข้าทำโน้ตเพลงโบราณชิ้นสำคัญหายไป มันเป็นเพลงที่มีพลังมาก... เจ้าพอจะช่วยข้าตามหาได้หรือไม่?",
+  npcMusicMasterLostSheetThanks: "ขอบคุณมาก! เจ้าได้ช่วยรักษาสมบัติทางดนตรีชิ้นสำคัญเอาไว้",
+  npcNoQuestsAvailable: "ตอนนี้ข้ายังไม่มีอะไรให้เจ้าช่วยนะ",
 };
 
 export function shuffleArray<T,>(array: T[]): T[] {
@@ -804,12 +964,20 @@ export function shuffleArray<T,>(array: T[]): T[] {
   return newArray;
 }
 
-export const getDifficultyText = (difficulty: Difficulty | null): string => {
+export const getDifficultyText = (difficulty: Difficulty | null, mode?: GameMode | null): string => {
     if (!difficulty) return '';
+    if (mode === GameMode.MELODY_RECALL) {
+        switch(difficulty) {
+            case Difficulty.EASY: return UI_TEXT_TH.easy.replace('(3 โน้ต)', '').trim() + ' (3 โน้ต)';
+            case Difficulty.MEDIUM: return UI_TEXT_TH.medium.replace('(4 โน้ต)', '').trim() + ' (4 โน้ต)';
+            case Difficulty.HARD: return UI_TEXT_TH.hard.replace('(5 โน้ต)', '').trim() + ' (5 โน้ต)';
+            default: return '';
+        }
+    }
     switch(difficulty) {
-        case Difficulty.EASY: return UI_TEXT_TH.easy;
-        case Difficulty.MEDIUM: return UI_TEXT_TH.medium;
-        case Difficulty.HARD: return UI_TEXT_TH.hard;
+        case Difficulty.EASY: return UI_TEXT_TH.easy.replace(/\s\(.*?\)/g, '').trim();
+        case Difficulty.MEDIUM: return UI_TEXT_TH.medium.replace(/\s\(.*?\)/g, '').trim();
+        case Difficulty.HARD: return UI_TEXT_TH.hard.replace(/\s\(.*?\)/g, '').trim();
         default: return '';
     }
 }
@@ -838,7 +1006,12 @@ export function getInstrumentSoundName(soundId: InstrumentSoundId, uiText: ThaiU
 export function getPetName(petId: PetId | undefined | null, uiText: ThaiUIText): string {
   if (!petId) return "";
   const petInfo = PET_DEFINITIONS.find(p => p.id === petId);
-  return petInfo ? uiText[petInfo.nameKey] : "Pet";
+  if (petInfo && petInfo.nameKey && uiText[petInfo.nameKey]) {
+    return uiText[petInfo.nameKey];
+  } else if (petInfo) {
+    return petInfo.id.toString(); // Fallback to PetId string if nameKey is bad
+  }
+  return "Pet"; // Default fallback if no petInfo or other issues
 }
 
 export function getHouseLevelName(level: number, uiText: ThaiUIText): string {
@@ -887,3 +1060,25 @@ export function getMonsterDefinition(monsterId: MonsterId): MonsterDefinition | 
 export function getMementoDefinition(mementoId: MementoId): MementoDefinition | undefined {
     return ALL_MEMENTOS.find(def => def.id === mementoId);
 }
+
+export function getNPCName(npcId: NPCId, uiText: ThaiUIText): string {
+    switch(npcId) {
+        case NPCId.MUSIC_MASTER: return uiText.npc_MUSIC_MASTER_name;
+        case NPCId.MEMENTO_COLLECTOR: return uiText.npc_MEMENTO_COLLECTOR_name;
+        case NPCId.ZALAY_BEAT: return uiText.npc_ZALAY_BEAT_name;
+        default: 
+          const _exhaustiveCheck: never = npcId;
+          return "NPC";
+    }
+}
+
+export function getQuestDefinition(questId: QuestId): QuestDefinition | undefined {
+    return QUEST_DEFINITIONS.find(def => def.id === questId);
+}
+
+export function getQuestTitle(questId: QuestId, uiText: ThaiUIText): string {
+    const definition = getQuestDefinition(questId);
+    return definition ? uiText[definition.titleKey] : "Quest";
+}
+
+export { FurnitureId }; // Re-export FurnitureId

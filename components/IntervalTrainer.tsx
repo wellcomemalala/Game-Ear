@@ -12,9 +12,10 @@ interface IntervalTrainerProps {
   difficulty: Difficulty;
   playerData: PlayerData;
   addXpAndCoins: (xp: number, coins: number, context: { gameMode: GameMode, currentStreak: number, questionsAnsweredThisMode: number, itemId: string }) => void;
-  updateHighestStreak: (streak: number) => void;
+  updateHighestStreak: (streak: number, gameMode: GameMode) => void;
   isMusicalItemUnlocked: (itemId: string, itemType: UnlockedItemType.INTERVAL | UnlockedItemType.CHORD) => boolean;
   selectedInstrumentSoundId: InstrumentSoundId;
+  highlightPianoOnPlay: boolean; // New
 }
 
 const IntervalTrainer: React.FC<IntervalTrainerProps> = ({ 
@@ -25,7 +26,8 @@ const IntervalTrainer: React.FC<IntervalTrainerProps> = ({
     addXpAndCoins, 
     updateHighestStreak, 
     isMusicalItemUnlocked,
-    selectedInstrumentSoundId 
+    selectedInstrumentSoundId,
+    highlightPianoOnPlay, // New
 }) => {
   const [currentQuestion, setCurrentQuestion] = useState<Question<IntervalInfo> | null>(null);
   const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null);
@@ -97,26 +99,28 @@ const IntervalTrainer: React.FC<IntervalTrainerProps> = ({
   }, [difficulty, playerData, isMusicalItemUnlocked, onBackToMenu]);
 
   useEffect(() => {
-    // This effect should run to generate the *first* question when the component mounts
-    // for a given difficulty, or if the difficulty itself changes.
-    // It should NOT re-run simply because playerData (and thus generateQuestion's identity) changed
-    // as a side effect of answering a question.
     generateQuestion();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [difficulty]); // Only trigger a new *initial* question load if `difficulty` changes.
+  }, [difficulty, generateQuestion]);
 
   const playCurrentInterval = useCallback(() => {
     if (currentQuestion && audioService) {
       setIsSoundPlaying(true);
       setIsSoundPlayed(true);
-      const rootMidiNote = frequencyToMidiNote(currentQuestion.rootFrequency);
-      const secondMidiNote = rootMidiNote + currentQuestion.item.semitones;
-      setHighlightedNotes([rootMidiNote, secondMidiNote]);
+      if (highlightPianoOnPlay) {
+        const rootMidiNote = frequencyToMidiNote(currentQuestion.rootFrequency);
+        const secondMidiNote = rootMidiNote + currentQuestion.item.semitones;
+        setHighlightedNotes([rootMidiNote, secondMidiNote]);
+      } else {
+        setHighlightedNotes([]);
+      }
       audioService.playInterval(currentQuestion.rootFrequency, currentQuestion.item.semitones, true, 0.6, selectedInstrumentSoundId);
       const soundDuration = 1400; 
-      setTimeout(() => setIsSoundPlaying(false), soundDuration); 
+      setTimeout(() => {
+        setIsSoundPlaying(false);
+        if (highlightPianoOnPlay) setHighlightedNotes([]); // Clear after sound if it was on
+      }, soundDuration); 
     }
-  }, [currentQuestion, audioService, selectedInstrumentSoundId]);
+  }, [currentQuestion, audioService, selectedInstrumentSoundId, highlightPianoOnPlay]);
   
   const handleAnswer = (intervalId: string) => {
     if (!currentQuestion || showFeedback) return;
@@ -131,7 +135,7 @@ const IntervalTrainer: React.FC<IntervalTrainerProps> = ({
       setScore(newScore);
       const newStreak = currentStreak + 1;
       setCurrentStreak(newStreak);
-      if (newStreak > playerData.highestStreak) updateHighestStreak(newStreak);
+      updateHighestStreak(newStreak, GameMode.INTERVALS);
       
       addXpAndCoins(XP_PER_CORRECT_ANSWER, GCOINS_PER_CORRECT_ANSWER, {
         gameMode: GameMode.INTERVALS,
@@ -174,7 +178,7 @@ const IntervalTrainer: React.FC<IntervalTrainerProps> = ({
       onNextQuestion={handleNextQuestion}
       isQuestionAnswered={showFeedback}
       isSoundPlaying={isSoundPlaying}
-      highlightedNotes={highlightedNotes}
+      highlightedNotes={highlightedNotes} // Already respects highlightPianoOnPlay
     >
       {currentQuestion.options.map(option => (
         <OptionButton

@@ -37,18 +37,38 @@ const PetAdoptionPage: React.FC<PetAdoptionPageProps> = ({
     }
   };
 
-  const availablePetsToAdopt = PET_DEFINITIONS;
+  // Filter out pets that are evolved forms (cost === 0) or already owned by name comparison.
+  // Only show pets that are meant for initial adoption (cost > 0).
+  const availablePetsToAdopt = PET_DEFINITIONS.filter(petDef => petDef.cost > 0);
 
-  if (availablePetsToAdopt.length === 0) {
+  if (availablePetsToAdopt.length === 0 && playerData.ownedPetIds.length === PET_DEFINITIONS.filter(p => p.cost > 0).length) {
     return (
       <div className="w-full max-w-md mx-auto bg-slate-800 p-8 rounded-xl shadow-2xl text-center">
-        <p className="text-slate-100 text-outline-black">ไม่มีเพื่อนซี้ให้รับเลี้ยงในขณะนี้</p>
-        <button onClick={onBackToMenu} className="mt-4 btn-secondary">
+        <h1 className="text-2xl md:text-3xl font-bold text-sky-300 text-outline-black mb-6">
+          {UI_TEXT_TH.petAdoptionCenterTitle}
+        </h1>
+        <p className="text-slate-100 text-outline-black">คุณได้รับเลี้ยงเพื่อนซี้ที่มีให้รับเลี้ยงครบทุกตัวแล้ว!</p>
+        <button onClick={onBackToMenu} className="mt-6 btn-secondary">
           {UI_TEXT_TH.backToMenu}
         </button>
       </div>
     );
   }
+  
+  if (availablePetsToAdopt.filter(p => !playerData.ownedPetIds.includes(p.id)).length === 0 && availablePetsToAdopt.length > 0) {
+     return (
+      <div className="w-full max-w-md mx-auto bg-slate-800 p-8 rounded-xl shadow-2xl text-center">
+        <h1 className="text-2xl md:text-3xl font-bold text-sky-300 text-outline-black mb-6">
+          {UI_TEXT_TH.petAdoptionCenterTitle}
+        </h1>
+        <p className="text-slate-100 text-outline-black">คุณได้รับเลี้ยงเพื่อนซี้ที่มีให้รับเลี้ยงครบทุกตัวแล้ว!</p>
+        <button onClick={onBackToMenu} className="mt-6 btn-secondary">
+          {UI_TEXT_TH.backToMenu}
+        </button>
+      </div>
+    );
+  }
+
 
   return (
     <div className="w-full max-w-2xl mx-auto bg-slate-800 p-6 md:p-10 rounded-xl shadow-2xl">
@@ -105,7 +125,7 @@ const PetAdoptionPage: React.FC<PetAdoptionPageProps> = ({
           );
         })}
       </div>
-       {availablePetsToAdopt.every(p => playerData.ownedPetIds.includes(p.id)) && (
+       {availablePetsToAdopt.filter(p => !playerData.ownedPetIds.includes(p.id)).length === 0 && availablePetsToAdopt.length > 0 && (
         <p className="text-center text-slate-200 text-outline-black mt-6">คุณรับเลี้ยงเพื่อนซี้ทุกตัวแล้ว!</p>
       )}
     </div>
