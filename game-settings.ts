@@ -7,7 +7,7 @@ export const INITIAL_PLAYER_DATA: PlayerData = {
   playerName: '',
   xp: 0,
   level: 1,
-  gCoins: 1000,
+  gCoins: 100000000,
   unlockedAchievementIds: [],
   intervalQuestionsAnswered: 0,
   chordQuestionsAnswered: 0,
