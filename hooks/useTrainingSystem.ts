@@ -31,6 +31,8 @@ export interface TrainingSystemReturn {
   updateHighestStreak: (streak: number, gameMode: GameMode) => void;
 }
 
+const deepClone = <T,>(obj: T): T => JSON.parse(JSON.stringify(obj));
+
 export const useTrainingSystem = ({
   setPlayerDataOptimistic,
   addNotification,
@@ -52,25 +54,27 @@ export const useTrainingSystem = ({
     setPlayerDataOptimistic(prev => {
       if (!prev) return prev;
 
-      const houseBenefits = HOUSE_BENEFITS_PER_LEVEL[prev.houseLevel] || HOUSE_BENEFITS_PER_LEVEL[0];
+      let updatedData = deepClone(prev);
+      let localNotifications: Omit<NotificationMessage, 'id'>[] = [];
+      
+      const houseBenefits = HOUSE_BENEFITS_PER_LEVEL[updatedData.houseLevel] || HOUSE_BENEFITS_PER_LEVEL[0];
       const finalXp = Math.round(baseXp * houseBenefits.trainingXpMultiplier);
       let finalCoins = Math.round(baseCoins * houseBenefits.trainingGCoinMultiplier);
-      let localNotifications: Omit<NotificationMessage, 'id'>[] = [];
-
+      
       awardedXp = finalXp; 
       awardedCoins = finalCoins; 
 
-      if (prev.isMarried && prev.spouseId === NPCId.RHYTHM && prev.marriageHappiness > MARRIAGE_HAPPINESS_SICK_AT_HEART_THRESHOLD) {
+      if (updatedData.isMarried && updatedData.spouseId === NPCId.RHYTHM && updatedData.marriageHappiness > MARRIAGE_HAPPINESS_SICK_AT_HEART_THRESHOLD) {
         if (Math.random() < SPOUSAL_BONUS_GCOIN_CHANCE_RHYTHM) {
-          const bonusRhythmCoins = SPOUSAL_BONUS_GCOIN_AMOUNT_RHYTHM; // Use a temp var
+          const bonusRhythmCoins = SPOUSAL_BONUS_GCOIN_AMOUNT_RHYTHM;
           finalCoins += bonusRhythmCoins;
-          awardedCoins = finalCoins; // Update awardedCoins if bonus applied
+          awardedCoins = finalCoins;
           localNotifications.push({ type: 'info', titleKey: 'appName', itemName: UI_TEXT_TH.spousalBonusRhythmDesc?.replace('{value}', bonusRhythmCoins.toString()) || `โบนัสจากริทึ่ม! ได้รับ ${bonusRhythmCoins} G-Coins เพิ่ม!` });
         }
       }
       
-
-      let updatedData = { ...prev, xp: prev.xp + finalXp, gCoins: prev.gCoins + finalCoins };
+      updatedData.xp += finalXp;
+      updatedData.gCoins += finalCoins;
 
       const levelUpResult = checkAndApplyLevelUp(updatedData.xp, updatedData.level, updatedData);
       updatedData = levelUpResult.updatedPlayerData;
@@ -86,22 +90,49 @@ export const useTrainingSystem = ({
         melodyRecallCorrectCounts: context.gameMode === GameMode.MELODY_RECALL ? { ...updatedData.melodyRecallCorrectCounts, [context.itemId]: (updatedData.melodyRecallCorrectCounts[context.itemId] || 0) + 1 } : updatedData.melodyRecallCorrectCounts,
       };
 
-      // Removed individual XP and G-Coin info notifications as requested
-      // if (finalXp > 0) {
-      //   localNotifications.push({type: 'info', titleKey: 'appName', itemName: `ได้รับ ${finalXp} XP!`});
-      // }
-      // if (finalCoins > 0) { // This check should be against awardedCoins if it's the final value including bonus
-      //    localNotifications.push({type: 'info', titleKey: 'appName', itemName: `ได้รับ ${awardedCoins} G-Coins!`});
-      // }
-
+      // Specific Achievement checks using 'prev' for the condition
+      if (context.gameMode === GameMode.INTERVALS && !prev.unlockedAchievementIds.includes(AchievementId.FIRST_CORRECT_INTERVAL)) {
+        const achResult = unlockAchievementInternal(AchievementId.FIRST_CORRECT_INTERVAL, updatedData);
+        updatedData = achResult.updatedPlayerData;
+        if (achResult.notification) localNotifications.push(achResult.notification);
+      } else if (context.gameMode === GameMode.CHORDS && !prev.unlockedAchievementIds.includes(AchievementId.FIRST_CORRECT_CHORD)) {
+        const achResult = unlockAchievementInternal(AchievementId.FIRST_CORRECT_CHORD, updatedData);
+        updatedData = achResult.updatedPlayerData;
+        if (achResult.notification) localNotifications.push(achResult.notification);
+      } else if (context.gameMode === GameMode.MELODY_RECALL && !prev.unlockedAchievementIds.includes(AchievementId.FIRST_CORRECT_MELODY)) {
+        const achResult = unlockAchievementInternal(AchievementId.FIRST_CORRECT_MELODY, updatedData);
+        updatedData = achResult.updatedPlayerData;
+        if (achResult.notification) localNotifications.push(achResult.notification);
+      }
+      
+      // Subsequent achievement checks should use the potentially updated `updatedData.unlockedAchievementIds`
+      if (context.itemId === 'M3' && context.gameMode === GameMode.INTERVALS) {
+        const count = updatedData.intervalCorrectCounts['M3'] || 0;
+        if (count >= 10 && !updatedData.unlockedAchievementIds.includes(AchievementId.M3_NOVICE)) {
+            const achResult = unlockAchievementInternal(AchievementId.M3_NOVICE, updatedData);
+            updatedData = achResult.updatedPlayerData;
+            if (achResult.notification) localNotifications.push(achResult.notification);
+        }
+        if (count >= 50 && !updatedData.unlockedAchievementIds.includes(AchievementId.M3_ADEPT)) {
+            const achResult = unlockAchievementInternal(AchievementId.M3_ADEPT, updatedData);
+            updatedData = achResult.updatedPlayerData;
+            if (achResult.notification) localNotifications.push(achResult.notification);
+        }
+      }
+      // Add more item-specific achievement checks here if needed, using updatedData.unlockedAchievementIds
 
       if (updatedData.activePetId && updatedData.pets[updatedData.activePetId]) {
         const petXpResult = handlePetXPForCorrectAnswerInternal(updatedData.activePetId, updatedData.pets, updatedData);
-        if (petXpResult.updatedPets) updatedData.pets = petXpResult.updatedPets;
-        localNotifications.push(...petXpResult.notifications);
-        if (petXpResult.updatedPlayerDataForAch?.unlockedAchievementIds) {
-             updatedData.unlockedAchievementIds = Array.from(new Set([...updatedData.unlockedAchievementIds, ...petXpResult.updatedPlayerDataForAch.unlockedAchievementIds]));
+        if (petXpResult.updatedPets) updatedData.pets = petXpResult.updatedPets; // This should update the pets within updatedData
+        // Ensure updatedData reflects changes from pet XP handling before further processing
+        if(petXpResult.updatedPlayerDataForAch) {
+           updatedData = {
+             ...updatedData,
+             ...petXpResult.updatedPlayerDataForAch,
+             unlockedAchievementIds: Array.from(new Set([...updatedData.unlockedAchievementIds, ...(petXpResult.updatedPlayerDataForAch.unlockedAchievementIds || [])]))
+           };
         }
+        localNotifications.push(...petXpResult.notifications);
       }
 
       updatedData = updateMissionProgressInternal(MissionType.EARN_GCOINS_FROM_TRAINING, updatedData, finalCoins, {gcoinsEarnedInThisEvent: finalCoins});
@@ -129,36 +160,6 @@ export const useTrainingSystem = ({
           }
       }
 
-      let currentAchievements = updatedData.unlockedAchievementIds;
-      if (context.gameMode === GameMode.INTERVALS && !currentAchievements.includes(AchievementId.FIRST_CORRECT_INTERVAL)) {
-        const achResult = unlockAchievementInternal(AchievementId.FIRST_CORRECT_INTERVAL, updatedData);
-        updatedData = achResult.updatedPlayerData; currentAchievements = updatedData.unlockedAchievementIds;
-        if (achResult.notification) localNotifications.push(achResult.notification);
-      } else if (context.gameMode === GameMode.CHORDS && !currentAchievements.includes(AchievementId.FIRST_CORRECT_CHORD)) {
-        const achResult = unlockAchievementInternal(AchievementId.FIRST_CORRECT_CHORD, updatedData);
-        updatedData = achResult.updatedPlayerData; currentAchievements = updatedData.unlockedAchievementIds;
-        if (achResult.notification) localNotifications.push(achResult.notification);
-      } else if (context.gameMode === GameMode.MELODY_RECALL && !currentAchievements.includes(AchievementId.FIRST_CORRECT_MELODY)) {
-        const achResult = unlockAchievementInternal(AchievementId.FIRST_CORRECT_MELODY, updatedData);
-        updatedData = achResult.updatedPlayerData; currentAchievements = updatedData.unlockedAchievementIds;
-        if (achResult.notification) localNotifications.push(achResult.notification);
-      }
-
-      if (context.itemId === 'M3' && context.gameMode === GameMode.INTERVALS) {
-        const count = updatedData.intervalCorrectCounts['M3'] || 0;
-        if (count >= 10 && !currentAchievements.includes(AchievementId.M3_NOVICE)) {
-            const achResult = unlockAchievementInternal(AchievementId.M3_NOVICE, updatedData);
-            updatedData = achResult.updatedPlayerData; currentAchievements = updatedData.unlockedAchievementIds;
-            if (achResult.notification) localNotifications.push(achResult.notification);
-        }
-        if (count >= 50 && !currentAchievements.includes(AchievementId.M3_ADEPT)) {
-            const achResult = unlockAchievementInternal(AchievementId.M3_ADEPT, updatedData);
-            updatedData = achResult.updatedPlayerData; currentAchievements = updatedData.unlockedAchievementIds;
-            if (achResult.notification) localNotifications.push(achResult.notification);
-        }
-      }
-      // Add more item-specific achievement checks here if needed
-
       localNotifications.forEach(addNotification);
       return updatedData;
     });
@@ -170,17 +171,21 @@ export const useTrainingSystem = ({
         if (!prev) return prev;
         let updatedData = updateHighestStreakInternal(streak, gameMode, prev);
         const localNotifications: Omit<NotificationMessage, 'id'>[] = [];
+        
+        // Use updatedData for checks as it contains the latest streak info
         let currentAchievements = updatedData.unlockedAchievementIds;
 
         let streak5Ach = (gameMode === GameMode.MELODY_RECALL) ? AchievementId.MELODY_RECALL_STREAK_3 : AchievementId.STREAK_5;
         let streak10Ach = (gameMode === GameMode.MELODY_RECALL) ? AchievementId.MELODY_RECALL_STREAK_7 : AchievementId.STREAK_10;
+        const streakThreshold5 = gameMode === GameMode.MELODY_RECALL ? 3 : 5;
+        const streakThreshold10 = gameMode === GameMode.MELODY_RECALL ? 7 : 10;
 
-        if(streak >= (gameMode === GameMode.MELODY_RECALL ? 3:5) && !currentAchievements.includes(streak5Ach)) {
+        if(streak >= streakThreshold5 && !currentAchievements.includes(streak5Ach)) {
             const achResult = unlockAchievementInternal(streak5Ach, updatedData);
             updatedData = achResult.updatedPlayerData; currentAchievements = updatedData.unlockedAchievementIds;
             if (achResult.notification) localNotifications.push(achResult.notification);
         }
-         if(streak >= (gameMode === GameMode.MELODY_RECALL ? 7:10) && !currentAchievements.includes(streak10Ach)) {
+         if(streak >= streakThreshold10 && !currentAchievements.includes(streak10Ach)) {
             const achResult = unlockAchievementInternal(streak10Ach, updatedData);
             updatedData = achResult.updatedPlayerData; currentAchievements = updatedData.unlockedAchievementIds;
             if (achResult.notification) localNotifications.push(achResult.notification);

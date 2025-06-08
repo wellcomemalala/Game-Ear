@@ -143,15 +143,16 @@ export const BASE_SHOP_ITEMS: ShopItem[] = [
     icon: f.iconComponent, 
     data: f 
   }))),
-  ...(ALL_CLOTHING_ITEMS.map(c => ({ 
-    id: c.id, 
-    nameKey: c.nameKey, 
-    descriptionKey: c.descriptionKey, 
-    cost: c.cost, 
-    type: UnlockedItemType.CLOTHING as UnlockedItemType.CLOTHING,
-    icon: c.iconComponent, 
-    data: { layer: c.layer, color: c.color } 
-  }))),
+  // Clothing items are removed from the shop here:
+  // ...(ALL_CLOTHING_ITEMS.map(c => ({ 
+  //   id: c.id, 
+  //   nameKey: c.nameKey, 
+  //   descriptionKey: c.descriptionKey, 
+  //   cost: c.cost, 
+  //   type: UnlockedItemType.CLOTHING as UnlockedItemType.CLOTHING,
+  //   icon: c.iconComponent, 
+  //   data: { layer: c.layer, color: c.color } 
+  // }))),
   HEART_NOTE_LOCKET_SHOP_ITEM_DEF,
   WEDDING_RING_SHOP_ITEM_DEF,
   BABY_CRIB_SHOP_ITEM_DEF,

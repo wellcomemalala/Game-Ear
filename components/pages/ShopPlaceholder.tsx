@@ -51,7 +51,7 @@ const ShopPage: React.FC<ShopProps> = ({
   const furnitureShopItems = SHOP_ITEMS.filter(item => item.type === UnlockedItemType.FURNITURE);
   const keyShopItems = SHOP_ITEMS.filter(item => item.type === UnlockedItemType.KEY_ITEM && (item.id === ShopItemId.HEART_NOTE_LOCKET || item.id === ShopItemId.WEDDING_RING || item.id === ShopItemId.BABY_CRIB) );
   const childCareShopItems = SHOP_ITEMS.filter(item => item.type === UnlockedItemType.CHILD_CARE);
-  const clothingShopItems = SHOP_ITEMS.filter(item => item.type === UnlockedItemType.CLOTHING);
+  // const clothingShopItems = SHOP_ITEMS.filter(item => item.type === UnlockedItemType.CLOTHING); // Removed
 
 
   const renderShopSection = (
@@ -150,7 +150,7 @@ const ShopPage: React.FC<ShopProps> = ({
         {renderShopSection("อาหารเพื่อนซี้", petFoodShopItem ? [petFoodShopItem] : [], <FoodBowlIcon className="w-6 h-6 text-lime-300" />)}
         {renderShopSection("เสียงเครื่องดนตรี", instrumentSoundItems, <SpeakerWaveIcon className="w-6 h-6 text-purple-300" />)}
         {renderShopSection("ของแต่งตัวเพื่อนซี้", petCustomizationShopItems, <ShirtIcon className="w-6 h-6 text-teal-300" />)}
-        {renderShopSection("เสื้อผ้าตัวละคร", clothingShopItems, <ShirtIcon className="w-6 h-6 text-indigo-300" />)}
+        {/* {renderShopSection("เสื้อผ้าตัวละคร", clothingShopItems, <ShirtIcon className="w-6 h-6 text-indigo-300" />)} // Removed this line */}
       </div>
 
 
@@ -162,4 +162,3 @@ const ShopPage: React.FC<ShopProps> = ({
 };
 
 export default ShopPage;
-    
