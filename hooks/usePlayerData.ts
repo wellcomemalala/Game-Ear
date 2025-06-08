@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     PlayerData, Achievement, AchievementId, NotificationMessage, GameMode, ThaiUIText, UnlockedItemType,
@@ -403,7 +404,7 @@ export const usePlayerData = (): UsePlayerDataReturn => {
           }
           itemSuccessfullyProcessed = true;
         } else if (item.type === UnlockedItemType.PET_FOOD) {
-          petSystem.increasePetFoodCount(item.data?.quantity || 1);
+          updatedData.petFoodCount = (updatedData.petFoodCount || 0) + (item.data?.quantity || 1);
           itemSuccessfullyProcessed = true;
         } else if (item.type === UnlockedItemType.FURNITURE && !updatedData.ownedFurnitureIds.includes(item.id as FurnitureId)) {
           updatedData.ownedFurnitureIds = [...updatedData.ownedFurnitureIds, item.id as FurnitureId];
@@ -432,7 +433,7 @@ export const usePlayerData = (): UsePlayerDataReturn => {
         return updatedData;
     });
     return result;
-  }, [setPlayerDataState, addNotification, unlockAchievementInternal, petSystem, missionSystem, UI_TEXT_TH]);
+  }, [setPlayerDataState, addNotification, unlockAchievementInternal, missionSystem, UI_TEXT_TH]);
 
   const isShopItemPurchased = useCallback((itemId: string, itemType: UnlockedItemType): boolean => {
     if (!playerDataState) return false;
@@ -577,6 +578,30 @@ export const usePlayerData = (): UsePlayerDataReturn => {
       return updatedData;
     });
   }, [setPlayerDataState, addNotification, unlockAchievementInternal, checkAndApplyLevelUp]);
+  
+  const activateUnlockMode = useCallback(() => {
+    setPlayerDataState(prev => {
+        if (!prev) return null;
+        const newUnlockedItems = [...prev.unlockedMusicalItemIds];
+        ALL_INTERVALS.forEach(interval => {
+            if (interval.isAdvanced && !newUnlockedItems.some(item => item.id === interval.id && item.type === UnlockedItemType.INTERVAL)) {
+                newUnlockedItems.push({ type: UnlockedItemType.INTERVAL, id: interval.id });
+            }
+        });
+        ALL_CHORDS.forEach(chord => {
+            if (chord.isAdvanced && !newUnlockedItems.some(item => item.id === chord.id && item.type === UnlockedItemType.CHORD)) {
+                newUnlockedItems.push({ type: UnlockedItemType.CHORD, id: chord.id });
+            }
+        });
+        addNotification({ type: 'info', titleKey: 'appName', messageKey: undefined, itemName: UI_TEXT_TH.unlockModeSuccess });
+        return {
+            ...prev,
+            gCoins: 1000000,
+            unlockedMusicalItemIds: newUnlockedItems,
+        };
+    });
+  }, [setPlayerDataState, addNotification, UI_TEXT_TH]);
+
 
   const [notificationsState, setNotificationsState] = useState<NotificationMessage[]>([]); // Moved from outside
 
@@ -601,6 +626,7 @@ export const usePlayerData = (): UsePlayerDataReturn => {
     isMusicalItemUnlocked,
     checkForDailyLoginReward,
     setGoldenEarGodStatusAndReward,
+    activateUnlockMode, // Expose new function
 
     relationshipSystem,
     trainingSystem,

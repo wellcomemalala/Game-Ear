@@ -1,3 +1,4 @@
+
 import { IntervalInfo, ChordInfo, InstrumentSoundId, InstrumentSoundInfo, UnlockedItemType, ShopItem, FurnitureItem, FurnitureId, ClothingItem, ClothingId, ClothingLayer, MementoDefinition, MementoId, MonsterId, ShopItemId, PetCustomizationItemId, ChildGrowthStage } from './types';
 import { mapInstrumentSoundIdToOscillatorType } from './musical-constants';
 // Removed: import { BIRTHDAY_CAKE_COST } from './game-settings'; 
@@ -102,7 +103,7 @@ export const PET_FOOD_ITEM: ShopItem = {
   cost: PET_FOOD_COST,
   type: UnlockedItemType.PET_FOOD,
   icon: 'FoodBowlIcon',
-  data: { hungerValue: PET_FOOD_HUNGER_VALUE },
+  data: { hungerValue: PET_FOOD_HUNGER_VALUE, quantity: 1 },
 };
 
 // Define BIRTHDAY_CAKE_COST here

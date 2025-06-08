@@ -2,7 +2,7 @@
 // Added a comment to ensure re-processing
 import React, { useState, useEffect, useCallback } from 'react';
 import { GameMode, Difficulty, PlayerData, AppView, InstrumentSoundId, PetId, NotificationMessage, MissionId, MonsterId, MissionType, NPCId, QuestId, AvatarStyle, QuestStatus, RelationshipData, MementoId, GiftResult, RelationshipStatus, FaceId, HairId, SkinColorId, HairColorId, PlayerAppearance, UnlockedItemType } from './types';
-import { UI_TEXT_TH, getDifficultyText, DAILY_LOGIN_REWARD, getInstrumentSoundName, PET_DEFINITIONS, getHouseLevelName, ALL_MONSTERS, getNPCName, getQuestTitle, QUEST_DEFINITIONS, getQuestDefinition, getPetName, ALL_FACE_OPTIONS, ALL_HAIR_OPTIONS, ALL_SKIN_COLOR_OPTIONS, ALL_HAIR_COLOR_OPTIONS, SHOP_ITEMS, LEVEL_THRESHOLDS } from './constants';
+import { UI_TEXT_TH, getDifficultyText, DAILY_LOGIN_REWARD, getInstrumentSoundName, PET_DEFINITIONS, getHouseLevelName, ALL_MONSTERS, getNPCName, getQuestTitle, QUEST_DEFINITIONS, getQuestDefinition, getPetName, ALL_FACE_OPTIONS, ALL_HAIR_OPTIONS, ALL_SKIN_COLOR_OPTIONS, ALL_HAIR_COLOR_OPTIONS, SHOP_ITEMS, LEVEL_THRESHOLDS, getMonsterDefinition, ALL_INTERVALS, ALL_CHORDS } from './constants'; // Added ALL_INTERVALS, ALL_CHORDS, getMonsterDefinition
 
 // Hooks
 import { usePlayerData } from './hooks/usePlayerData';
@@ -41,7 +41,7 @@ import FinalBossBattlePage from './components/pages/FinalBossBattlePage';
 import { PlayerStatusBar } from './components/rpg/PlayerStatusBar';
 import NotificationArea from './components/rpg/NotificationArea';
 
-const MainMenu: React.FC<{ navigateTo: (view: AppView) => void, playerData: PlayerData | null }> = ({ navigateTo, playerData }) => {
+const MainMenu: React.FC<{ navigateTo: (view: AppView) => void, playerData: PlayerData | null, onUnlockMode: () => void }> = ({ navigateTo, playerData, onUnlockMode }) => {
   if (!playerData) return null;
   const hasPets = playerData.ownedPetIds && playerData.ownedPetIds.length > 0;
   const allMonstersDefeated = ALL_MONSTERS.every(m => playerData.defeatedMonsterIds.includes(m.id)); 
@@ -78,6 +78,7 @@ const MainMenu: React.FC<{ navigateTo: (view: AppView) => void, playerData: Play
       <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.SUMMARY_PAGE)}>{UI_TEXT_TH.viewSummary}</button>
       <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.MONSTERPEDIA)}>{UI_TEXT_TH.viewMonsterpedia}</button>
       <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.GAME_GUIDE_PAGE)}>{UI_TEXT_TH.viewGameGuide}</button>
+      <button className="menu-button w-full max-w-sm btn-neutral" onClick={onUnlockMode}>{UI_TEXT_TH.unlockModeButtonLabel}</button>
       <button className="btn-settings w-full max-w-sm mt-2" onClick={() => navigateTo(AppView.SETTINGS)}>{UI_TEXT_TH.viewSettings}</button>
     </div>
   );
@@ -134,7 +135,8 @@ const App: React.FC = () => {
     performFamilyActivity, 
     getFamilyActivityCooldownTime, 
     celebrateBirthday,
-    setGoldenEarGodStatusAndReward, 
+    setGoldenEarGodStatusAndReward,
+    activateUnlockMode, // Added from usePlayerData
   } = playerDataHook;
 
   const [currentView, setCurrentView] = useState<AppView>(AppView.PLAYER_NAME_INPUT);
@@ -144,6 +146,7 @@ const App: React.FC = () => {
   const [selectedMonsterId, setSelectedMonsterId] = useState<MonsterId | null>(null);
   const [selectedNpcIdForQuest, setSelectedNpcIdForQuest] = useState<NPCId | null>(null);
   const [giftingTargetNpcId, setGiftingTargetNpcId] = useState<NPCId | null>(null);
+  const [isUnlockModeActive, setIsUnlockModeActive] = useState<boolean>(false); // New state for unlock mode
 
   useEffect(() => {
     const service = new AudioService();
@@ -164,9 +167,8 @@ const App: React.FC = () => {
 
   const navigateTo = (view: AppView) => {
     if (view === AppView.MENU) {
-      setSelectedGameMode(null); // Reset game mode when going to main menu
-      setSelectedDifficulty(Difficulty.EASY); // Reset difficulty to default
-      // Consider resetting other temporary states like selectedMonsterId, selectedNpcIdForQuest if needed
+      setSelectedGameMode(null); 
+      setSelectedDifficulty(Difficulty.EASY); 
       setSelectedMonsterId(null);
       setSelectedNpcIdForQuest(null);
       setGiftingTargetNpcId(null);
@@ -207,8 +209,20 @@ const App: React.FC = () => {
   };
   
   const handleMonsterSelection = (monsterId: MonsterId) => {
-    setSelectedMonsterId(monsterId);
-    navigateTo(AppView.MONSTER_BATTLE);
+    if (isUnlockModeActive) {
+      monsterSystem.recordMonsterDefeat(monsterId);
+      const monsterDef = getMonsterDefinition(monsterId);
+      addNotification({
+        type: 'info',
+        titleKey: 'appName',
+        messageKey: undefined,
+        itemName: UI_TEXT_TH.unlockModeMonsterDefeatedInstantly.replace('{monsterName}', monsterDef ? UI_TEXT_TH[monsterDef.nameKey] : 'อสูร')
+      });
+      navigateTo(AppView.MONSTER_LAIR);
+    } else {
+      setSelectedMonsterId(monsterId);
+      navigateTo(AppView.MONSTER_BATTLE);
+    }
   };
 
   const handleSelectNPCForQuest = (npcId: NPCId) => {
@@ -233,6 +247,17 @@ const App: React.FC = () => {
     navigateTo(AppView.MENU); 
   };
 
+  const handleUnlockModeActivation = () => {
+    const password = window.prompt(UI_TEXT_TH.unlockModePasswordPrompt);
+    if (password === "240941") {
+      setIsUnlockModeActive(true);
+      activateUnlockMode(); // Call the function from usePlayerData
+      // Success notification is handled within activateUnlockMode
+    } else if (password !== null) { 
+      addNotification({ type: 'info', titleKey: 'appName', messageKey: undefined, itemName: UI_TEXT_TH.unlockModeFailure });
+    }
+  };
+
 
   const renderView = () => {
     if (!playerData || !audioService) {
@@ -243,7 +268,7 @@ const App: React.FC = () => {
       case AppView.PLAYER_NAME_INPUT:
         return <PlayerNameInputPage setPlayerName={playerDataHook.setPlayerName} onNameSubmitted={handleNameSubmitted} />;
       case AppView.MENU:
-        return <MainMenu navigateTo={navigateTo} playerData={playerData} />;
+        return <MainMenu navigateTo={navigateTo} playerData={playerData} onUnlockMode={handleUnlockModeActivation} />;
       case AppView.DIFFICULTY_SELECTION:
         return selectedGameMode
             ? <DifficultySelectionFinalPage onSelectDifficulty={handleDifficultySelection} onBack={() => navigateTo(AppView.MENU)} mode={selectedGameMode} />
@@ -345,7 +370,7 @@ const App: React.FC = () => {
                     highlightPianoOnPlay={playerData.highlightPianoOnPlay}
                 />;
       default:
-        return <MainMenu navigateTo={navigateTo} playerData={playerData} />;
+        return <MainMenu navigateTo={navigateTo} playerData={playerData} onUnlockMode={handleUnlockModeActivation} />;
     }
   };
   
