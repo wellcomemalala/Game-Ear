@@ -8,9 +8,10 @@ import IncorrectIcon from './icons/IncorrectIcon';
 interface FeedbackMessageProps {
   isCorrect: boolean;
   correctAnswerText?: string;
+  reward?: {xp: number, coins: number} | null; // New prop
 }
 
-const FeedbackMessage: React.FC<FeedbackMessageProps> = ({ isCorrect, correctAnswerText }) => {
+const FeedbackMessage: React.FC<FeedbackMessageProps> = ({ isCorrect, correctAnswerText, reward }) => {
   const bgColor = isCorrect ? 'bg-success' : 'bg-destructive';
   const Icon = isCorrect ? CorrectIcon : IncorrectIcon;
 
@@ -21,6 +22,12 @@ const FeedbackMessage: React.FC<FeedbackMessageProps> = ({ isCorrect, correctAns
         <p className="text-lg md:text-xl font-semibold">{isCorrect ? UI_TEXT_TH.correct : UI_TEXT_TH.incorrect}</p>
         {!isCorrect && correctAnswerText && (
           <p className="text-sm md:text-md">{UI_TEXT_TH.correctAnswerIs} {correctAnswerText}</p>
+        )}
+        {isCorrect && reward && (
+          <div className="text-xs md:text-sm mt-1 space-y-0.5">
+            {reward.xp > 0 && <p className="font-medium text-sky-200 text-outline-black">+{reward.xp} XP</p>}
+            {reward.coins > 0 && <p className="font-medium text-amber-200 text-outline-black">+{reward.coins} G-Coins</p>}
+          </div>
         )}
       </div>
     </div>

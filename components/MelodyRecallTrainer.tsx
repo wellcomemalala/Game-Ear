@@ -5,8 +5,8 @@ import {
   XP_PER_CORRECT_ANSWER,
   GCOINS_PER_CORRECT_ANSWER,
   getDifficultyText,
-  PIANO_LOWEST_MIDI_NOTE,
-  PIANO_HIGHEST_MIDI_NOTE,
+  ACTUAL_PIANO_LOWEST_MIDI_NOTE, // Corrected
+  ACTUAL_PIANO_HIGHEST_MIDI_NOTE, // Corrected
   midiNoteToName,
   midiNoteToFrequency, // Import for playing clicked notes
 } from '../constants';
@@ -72,9 +72,9 @@ const MelodyRecallTrainer: React.FC<MelodyRecallTrainerProps> = ({
   const generateMelody = useCallback(() => {
     const numNotes = getNumberOfNotes();
     const newMelody: NoteInfo[] = [];
-    
-    const MIN_ROOT_FOR_MELODY = PIANO_LOWEST_MIDI_NOTE + 4; 
-    const MAX_ROOT_FOR_MELODY = PIANO_HIGHEST_MIDI_NOTE - 4; 
+
+    const MIN_ROOT_FOR_MELODY = ACTUAL_PIANO_LOWEST_MIDI_NOTE + 4;
+    const MAX_ROOT_FOR_MELODY = ACTUAL_PIANO_HIGHEST_MIDI_NOTE - 4;
 
     let lastMidiNote = MIN_ROOT_FOR_MELODY + Math.floor(Math.random() * (MAX_ROOT_FOR_MELODY - MIN_ROOT_FOR_MELODY + 1));
     newMelody.push({ midiNote: lastMidiNote, duration: NOTE_DURATION, name: midiNoteToName(lastMidiNote) });
@@ -86,21 +86,21 @@ const MelodyRecallTrainer: React.FC<MelodyRecallTrainerProps> = ({
       let attempts = 0;
       do {
         const intervalDirection = Math.random() < 0.5 ? -1 : 1;
-        const intervalSize = 1 + Math.floor(Math.random() * maxIntervalStep); 
+        const intervalSize = 1 + Math.floor(Math.random() * maxIntervalStep);
         nextMidiNote = lastMidiNote + (intervalDirection * intervalSize);
         attempts++;
-      } while ((nextMidiNote < PIANO_LOWEST_MIDI_NOTE || nextMidiNote > PIANO_HIGHEST_MIDI_NOTE) && attempts < 10);
+      } while ((nextMidiNote < ACTUAL_PIANO_LOWEST_MIDI_NOTE || nextMidiNote > ACTUAL_PIANO_HIGHEST_MIDI_NOTE) && attempts < 10);
 
-      if (nextMidiNote < PIANO_LOWEST_MIDI_NOTE || nextMidiNote > PIANO_HIGHEST_MIDI_NOTE) {
-        if (lastMidiNote + 1 <= PIANO_HIGHEST_MIDI_NOTE) nextMidiNote = lastMidiNote + 1;
-        else if (lastMidiNote - 1 >= PIANO_LOWEST_MIDI_NOTE) nextMidiNote = lastMidiNote - 1;
-        else nextMidiNote = lastMidiNote; 
+      if (nextMidiNote < ACTUAL_PIANO_LOWEST_MIDI_NOTE || nextMidiNote > ACTUAL_PIANO_HIGHEST_MIDI_NOTE) {
+        if (lastMidiNote + 1 <= ACTUAL_PIANO_HIGHEST_MIDI_NOTE) nextMidiNote = lastMidiNote + 1;
+        else if (lastMidiNote - 1 >= ACTUAL_PIANO_LOWEST_MIDI_NOTE) nextMidiNote = lastMidiNote - 1;
+        else nextMidiNote = lastMidiNote;
       }
-      
+
       newMelody.push({ midiNote: nextMidiNote, duration: NOTE_DURATION, name: midiNoteToName(nextMidiNote) });
       lastMidiNote = nextMidiNote;
     }
-    
+
     setCurrentMelody(newMelody);
     setPlayerInputNotes([]);
     setIsCorrect(null);
@@ -118,7 +118,7 @@ const MelodyRecallTrainer: React.FC<MelodyRecallTrainerProps> = ({
       setIsSoundPlaying(true);
       setIsSoundPlayed(true);
       audioService.playMelodySequentially(currentMelody, selectedInstrumentSoundId, INTER_NOTE_DELAY);
-      
+
       if (highlightPianoOnPlay) {
         let accumulatedDelay = 0;
         currentMelody.forEach((note) => {
@@ -127,10 +127,10 @@ const MelodyRecallTrainer: React.FC<MelodyRecallTrainerProps> = ({
           }, accumulatedDelay * 1000);
           accumulatedDelay += note.duration + INTER_NOTE_DELAY;
         });
-        
+
         setTimeout(() => {
           setIsSoundPlaying(false);
-          setHighlightedNotesOnPiano([]); 
+          setHighlightedNotesOnPiano([]);
         }, accumulatedDelay * 1000 + 100);
       } else {
         setHighlightedNotesOnPiano([]); // Ensure no highlights if setting is off
@@ -150,7 +150,7 @@ const MelodyRecallTrainer: React.FC<MelodyRecallTrainerProps> = ({
       audioService.playNote(midiNoteToFrequency(midiNote), 0.3, 0, selectedInstrumentSoundId);
     }
   };
-  
+
   const handleClearInput = () => {
     if (showFeedback) return;
     setPlayerInputNotes([]);
@@ -162,7 +162,7 @@ const MelodyRecallTrainer: React.FC<MelodyRecallTrainerProps> = ({
     const correctMelodyMidi = currentMelody.map(n => n.midiNote);
     const correct = playerInputNotes.length === correctMelodyMidi.length &&
                     playerInputNotes.every((note, index) => note === correctMelodyMidi[index]);
-    
+
     setIsCorrect(correct);
     setShowFeedback(true);
     setTotalQuestions(prev => prev + 1);
@@ -175,14 +175,14 @@ const MelodyRecallTrainer: React.FC<MelodyRecallTrainerProps> = ({
       const newStreak = currentStreak + 1;
       setCurrentStreak(newStreak);
       updateHighestStreak(newStreak, GameMode.MELODY_RECALL);
-      
+
       addXpAndCoins(XP_PER_CORRECT_ANSWER, GCOINS_PER_CORRECT_ANSWER, {
         gameMode: GameMode.MELODY_RECALL,
         currentStreak: newStreak,
         questionsAnsweredThisMode: (playerData.melodyRecallQuestionsAnswered || 0) + 1,
-        itemId: melodySignature, 
+        itemId: melodySignature,
       });
-      
+
       if (newScore > melodyRecallHighScore) {
         setMelodyRecallHighScore(newScore);
         localStorage.setItem(getHighScoreKey(), newScore.toString());
@@ -205,7 +205,7 @@ const MelodyRecallTrainer: React.FC<MelodyRecallTrainerProps> = ({
   if (!currentMelody || !playerData) {
     return <div className="text-center p-4 text-lg text-slate-100">{UI_TEXT_TH.loading}...</div>;
   }
-  
+
   const correctAnswerText = showFeedback && !isCorrect ? currentMelody.map(n => n.name).join(', ') : undefined;
 
   const customControls = (
@@ -218,8 +218,8 @@ const MelodyRecallTrainer: React.FC<MelodyRecallTrainerProps> = ({
       </button>
     </>
   );
-  
-  const playerInputDisplay = playerInputNotes.length > 0 
+
+  const playerInputDisplay = playerInputNotes.length > 0
     ? playerInputNotes.map(midi => midiNoteToName(midi)).join(', ')
     : "กดโน้ตบนเปียโน...";
 

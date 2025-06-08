@@ -1,24 +1,24 @@
-
 import React, { useState } from 'react';
-import { PlayerData, ShopItem as ShopItemType, ThaiUIText, UnlockedItemType, InstrumentSoundId, NotificationMessage, FurnitureId } from '../types';
-import { UI_TEXT_TH, SHOP_ITEMS, PET_FOOD_ID, PET_CUSTOMIZATION_ITEMS, ALL_FURNITURE_ITEMS } from '../constants';
-import { ShoppingBagIcon } from './icons/ShoppingBagIcon';
+import { PlayerData, ShopItem as ShopItemType, ThaiUIText, UnlockedItemType, InstrumentSoundId, NotificationMessage, FurnitureId, ShopItemId } from '../types';
+import { UI_TEXT_TH, SHOP_ITEMS, PET_FOOD_ID, PET_CUSTOMIZATION_ITEMS, ALL_FURNITURE_ITEMS, HEART_NOTE_LOCKET_COST, WEDDING_RING_COST } from '../constants';
+import { ShoppingBagIcon } from './icons/ShoppingBagIcon'; // Corrected path
 import { CoinIcon } from './icons/CoinIcon';
 import { CheckCircleIcon } from './icons/CheckCircleIcon';
 import { SpeakerWaveIcon } from './icons/SpeakerWaveIcon';
 import { FoodBowlIcon } from './icons/FoodBowlIcon';
-import { ShirtIcon } from './icons/ShirtIcon'; 
-import { FurnitureIcon } from './icons/FurnitureIcon'; // New
+import { ShirtIcon } from './icons/ShirtIcon';
+import { FurnitureIcon } from './icons/FurnitureIcon';
+import { HeartIcon } from './icons/HeartIcon'; // For key items
 
 interface ShopProps {
   playerData: PlayerData;
   onBackToMenu: () => void;
   purchaseShopItem: (item: ShopItemType) => { success: boolean, messageKey?: keyof ThaiUIText, itemName?: string };
-  isShopItemPurchased: (itemId: string, itemType: UnlockedItemType) => boolean;
+  isShopItemPurchased: (itemId: string, itemType: UnlockedItemType) => boolean; // Still useful for non-key items
   addNotification: (notification: Omit<NotificationMessage, 'id'>) => void;
 }
 
-const Shop: React.FC<ShopProps> = ({
+const ShopPage: React.FC<ShopProps> = ({
   playerData,
   onBackToMenu,
   purchaseShopItem,
@@ -47,6 +47,8 @@ const Shop: React.FC<ShopProps> = ({
   const petFoodShopItem = SHOP_ITEMS.find(item => item.id === PET_FOOD_ID && item.type === UnlockedItemType.PET_FOOD);
   const petCustomizationShopItems = SHOP_ITEMS.filter(item => item.type === UnlockedItemType.PET_CUSTOMIZATION);
   const furnitureShopItems = SHOP_ITEMS.filter(item => item.type === UnlockedItemType.FURNITURE);
+  const keyShopItems = SHOP_ITEMS.filter(item => item.type === UnlockedItemType.KEY_ITEM);
+
 
   const renderShopSection = (
     title: string,
@@ -63,8 +65,16 @@ const Shop: React.FC<ShopProps> = ({
         </h2>
         <div className={`grid grid-cols-1 ${items.length > 1 ? 'sm:grid-cols-2' : 'sm:grid-cols-1'} gap-4`}>
           {items.map(item => {
-            const isPurchased = (item.type !== UnlockedItemType.PET_FOOD && isShopItemPurchased(item.id, item.type)) ||
-                                (item.type === UnlockedItemType.FURNITURE && playerData.ownedFurnitureIds.includes(item.id as FurnitureId));
+            let isPurchased = false;
+            if (item.type === UnlockedItemType.KEY_ITEM) {
+                if (item.id === ShopItemId.HEART_NOTE_LOCKET) isPurchased = playerData.heartNoteLocketOwned;
+                else if (item.id === ShopItemId.WEDDING_RING) isPurchased = playerData.weddingRingOwned;
+            } else if (item.type === UnlockedItemType.FURNITURE) {
+                isPurchased = playerData.ownedFurnitureIds.includes(item.id as FurnitureId);
+            } else if (item.type !== UnlockedItemType.PET_FOOD) { // Pet food is always purchasable
+                isPurchased = isShopItemPurchased(item.id, item.type);
+            }
+
 
             return (
               <div key={item.id} className={`bg-slate-700 p-4 rounded-lg shadow-md flex flex-col justify-between ${isPurchased && item.type !== UnlockedItemType.PET_FOOD ? 'opacity-70' : ''}`}>
@@ -84,7 +94,7 @@ const Shop: React.FC<ShopProps> = ({
                   ) : (
                     <button
                       onClick={() => handlePurchase(item)}
-                      disabled={playerData.gCoins < item.cost && item.type !== UnlockedItemType.PET_FOOD}
+                      disabled={playerData.gCoins < item.cost && item.type !== UnlockedItemType.KEY_ITEM && item.type !== UnlockedItemType.PET_FOOD} 
                       className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-md shadow transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {UI_TEXT_TH.purchaseItem}
@@ -120,7 +130,8 @@ const Shop: React.FC<ShopProps> = ({
           {feedbackMessage}
         </div>
       )}
-
+      
+      {renderShopSection("ไอเทมสำคัญ", keyShopItems, <HeartIcon className="w-6 h-6 text-red-400" />)}
       {renderShopSection(UI_TEXT_TH.furnitureShopSectionTitle, furnitureShopItems, <FurnitureIcon className="w-6 h-6" />)}
       {renderShopSection("อาหารเพื่อนซี้", petFoodShopItem ? [petFoodShopItem] : [], <FoodBowlIcon className="w-6 h-6" />)}
       {renderShopSection("เสียงเครื่องดนตรี", instrumentSoundItems, <SpeakerWaveIcon className="w-6 h-6" />)}
@@ -134,4 +145,4 @@ const Shop: React.FC<ShopProps> = ({
   );
 };
 
-export default Shop;
+export default ShopPage;

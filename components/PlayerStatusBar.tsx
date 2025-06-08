@@ -1,8 +1,11 @@
+
 import React from 'react';
-import { UI_TEXT_TH, LEVEL_THRESHOLDS, PET_DEFINITIONS } from '../../constants';
-import { PlayerData, PetAbilityType } from '../../types';
-import PetDisplay from '../PetDisplay';
-import { SparklesIcon } from '../icons/SparklesIcon';
+import { UI_TEXT_TH, LEVEL_THRESHOLDS, PET_DEFINITIONS } from '../constants';
+import { PlayerData, PetAbilityType, AvatarStyle } from '../types'; // Added AvatarStyle
+import PetDisplay from './PetDisplay';
+import { SparklesIcon } from './icons/SparklesIcon';
+import { UserCircleIcon } from './icons/UserCircleIcon'; // New import
+import { SquareIcon } from './icons/SquareIcon'; // New import
 
 interface PlayerStatusBarProps {
   playerData: PlayerData;
@@ -12,15 +15,16 @@ interface PlayerStatusBarProps {
 }
 
 const generateColorFromSeed = (seed: string | undefined | null) => {
-  if (!seed) return '#888888';
+  if (!seed) return '#888888'; // Default color
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     hash = seed.charCodeAt(i) + ((hash << 5) - hash);
-    hash = hash & hash;
+    hash = hash & hash; // Convert to 32bit integer
   }
-  const color = (hash & 0x00FFFFFF).toString(16).toUpperCase();
-  return '#' + '00000'.substring(0, 6 - color.length) + color;
+  const hue = Math.abs(hash % 360); // Ensure hue is positive
+  return `hsl(${hue}, 70%, 60%)`;
 };
+
 
 const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({
     playerData,
@@ -28,7 +32,7 @@ const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({
     onPlayWithPet,
     getActivePetAbilityMultiplier,
 }) => {
-  const { playerName, level, xp: currentXp, gCoins, activePetId, pets, petFoodCount } = playerData;
+  const { playerName, level, xp: currentXp, gCoins, activePetId, pets, petFoodCount, avatarStyle } = playerData; // Destructure avatarStyle
   const currentLevelXpStart = level > 1 ? LEVEL_THRESHOLDS[level - 1] : 0;
   const nextLevelXpTarget = LEVEL_THRESHOLDS[level] ?? currentXp;
 
@@ -56,17 +60,49 @@ const PlayerStatusBar: React.FC<PlayerStatusBarProps> = ({
     }
   }
 
+  const renderAvatar = () => {
+    const baseClasses = "w-10 h-10 sm:w-12 sm:h-12 border-2 border-slate-500 flex items-center justify-center text-slate-100 text-xl font-bold text-shadow-strong";
+    
+    switch(avatarStyle) {
+      case AvatarStyle.TYPE_B: // Icon in Square
+        return (
+          <div
+            className={`${baseClasses} rounded-md`}
+            style={{ backgroundColor: avatarColor }}
+            title={playerName || UI_TEXT_TH.playerNameDisplayLabel.replace(':', '')}
+          >
+            <UserCircleIcon className="w-7 h-7 sm:w-8 sm:h-8" />
+          </div>
+        );
+      case AvatarStyle.TYPE_C: // Initials in Square
+        return (
+          <div
+            className={`${baseClasses} rounded-md`}
+            style={{ backgroundColor: avatarColor }}
+            title={playerName || UI_TEXT_TH.playerNameDisplayLabel.replace(':', '')}
+          >
+            {avatarInitial}
+          </div>
+        );
+      case AvatarStyle.TYPE_A: // Initials in Circle (Default)
+      default:
+        return (
+          <div
+            className={`${baseClasses} rounded-full`}
+            style={{ backgroundColor: avatarColor }}
+            title={playerName || UI_TEXT_TH.playerNameDisplayLabel.replace(':', '')}
+          >
+            {avatarInitial}
+          </div>
+        );
+    }
+  };
+
   return (
     <div className="bg-slate-800/80 backdrop-blur-sm shadow-lg p-3 fixed top-0 left-0 right-0 z-50">
       <div className="container mx-auto flex flex-wrap justify-between items-center max-w-4xl px-2 sm:px-4 gap-y-2">
         <div className="flex items-center space-x-2 sm:space-x-3">
-          <div
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-slate-500 flex items-center justify-center text-slate-100 text-xl font-bold"
-            style={{ backgroundColor: avatarColor }}
-            title={playerName || "ผู้เล่น"}
-          >
-            {avatarInitial}
-          </div>
+          {renderAvatar()}
           <div className="text-xs sm:text-sm">
             {playerName && <div className="font-bold text-white text-shadow-strong mb-0.5 truncate max-w-[100px] sm:max-w-[150px]" title={playerName}>{playerName}</div>}
             <div className="text-shadow-strong">

@@ -47,7 +47,7 @@
             info: {
               light: '#38BDF8', // Sky-400
               DEFAULT: '#0EA5E9', // Sky-500
-              dark: '#0284C7', // Sky-600
+              dark: '#0284C7', // Sky-500
             },
             // Keeping slate for backgrounds and general text
             background: 'slate.900',
@@ -138,6 +138,11 @@
        /* Settings Button */
       .btn-settings {
           @apply btn-neutral;
+      }
+
+      /* Menu Button Style */
+      .menu-button {
+        @apply btn bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-slate-500 text-left justify-start px-4 py-3;
       }
 
       /* Custom Scrollbar */

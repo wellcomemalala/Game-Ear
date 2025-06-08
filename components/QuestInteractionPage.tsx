@@ -1,20 +1,22 @@
 
+
 import React from 'react';
-import { PlayerData, NPCId, QuestId, QuestStatus, ThaiUIText, QuestDefinition, QuestObjective, QuestObjectiveType } from '../types';
-import { UI_TEXT_TH, getNPCName, getQuestTitle, QUEST_DEFINITIONS, getQuestDefinition } from '../constants';
-import { ChatBubbleLeftRightIcon } from './icons/ChatBubbleLeftRightIcon';
-import { GiftIcon } from './icons/GiftIcon';
-import { ClipboardDocumentCheckIcon } from './icons/ClipboardDocumentCheckIcon';
-import { CheckCircleIcon } from './icons/CheckCircleIcon';
+import { PlayerData, NPCId, QuestId, QuestStatusEnum, ThaiUIText, QuestDefinition, QuestObjective, QuestObjectiveType, QuestItemId } from '../../types'; // Changed QuestStatus to QuestStatusEnum, Added QuestItemId
+import { UI_TEXT_TH, getNPCName, getQuestTitle, QUEST_DEFINITIONS, getQuestDefinition } from '../../constants';
+import { ChatBubbleLeftRightIcon } from '../icons/ChatBubbleLeftRightIcon';
+import { GiftIcon } from '../icons/GiftIcon';
+import { ClipboardDocumentCheckIcon } from '../icons/ClipboardDocumentCheckIcon';
+import { CheckCircleIcon } from '../icons/CheckCircleIcon';
 
 interface QuestInteractionPageProps {
   npcId: NPCId;
   playerData: PlayerData;
   onBackToHub: () => void;
   onAcceptQuest: (questId: QuestId) => boolean;
-  onProgressQuest: (questId: QuestId, objectiveIndex?: number) => boolean;
+  onProgressQuest: (questId: QuestId, objectiveIndex?: number, details?: { puzzleId?: string; itemId?: string | QuestItemId }) => boolean;
   onClaimReward: (questId: QuestId) => boolean;
-  getQuestStatus: (questId: QuestId) => QuestStatus;
+  getQuestStatus: (questId: QuestId) => QuestStatusEnum; // Changed QuestStatus to QuestStatusEnum
+  collectQuestItem: (itemId: string | QuestItemId, quantity?: number) => void;
 }
 
 const QuestInteractionPage: React.FC<QuestInteractionPageProps> = ({
@@ -25,19 +27,20 @@ const QuestInteractionPage: React.FC<QuestInteractionPageProps> = ({
   onProgressQuest,
   onClaimReward,
   getQuestStatus,
+  collectQuestItem,
 }) => {
   const npcName = getNPCName(npcId, UI_TEXT_TH);
 
   const npcSpecificQuests = QUEST_DEFINITIONS.filter(qDef => qDef.npcId === npcId);
-  
+
   let displayQuest: QuestDefinition | null = null;
-  let displayQuestStatus: QuestStatus | null = null;
+  let displayQuestStatus: QuestStatusEnum | null = null; // Changed QuestStatus to QuestStatusEnum
   let activePlayerQuestData = null;
 
   // Prioritize active or completed (unclaimed) quest for this NPC
   for (const qDef of npcSpecificQuests) {
     const status = getQuestStatus(qDef.id);
-    if (status === 'active' || status === 'completed') {
+    if (status === QuestStatusEnum.ACTIVE || status === QuestStatusEnum.COMPLETED) { // Changed to QuestStatusEnum
       displayQuest = qDef;
       displayQuestStatus = status;
       activePlayerQuestData = playerData.activeQuests.find(aq => aq.questId === qDef.id);
@@ -49,20 +52,20 @@ const QuestInteractionPage: React.FC<QuestInteractionPageProps> = ({
   if (!displayQuest) {
     for (const qDef of npcSpecificQuests) {
       const status = getQuestStatus(qDef.id);
-      if (status === 'available') {
+      if (status === QuestStatusEnum.AVAILABLE) { // Changed to QuestStatusEnum
         displayQuest = qDef;
         displayQuestStatus = status;
         break;
       }
     }
   }
-  
+
   // Auto-progress "TALK_TO_NPC" objective if it's the current one for an active quest with this NPC
-  if (displayQuest && displayQuestStatus === 'active' && activePlayerQuestData) {
+  if (displayQuest && displayQuestStatus === QuestStatusEnum.ACTIVE && activePlayerQuestData) { // Changed to QuestStatusEnum
     const currentObjectiveDef = displayQuest.objectives[activePlayerQuestData.currentObjectiveIndex];
     const currentObjectiveProgress = activePlayerQuestData.objectiveProgress[activePlayerQuestData.currentObjectiveIndex];
     if (currentObjectiveDef && currentObjectiveDef.type === QuestObjectiveType.TALK_TO_NPC && currentObjectiveDef.targetId === npcId && !currentObjectiveProgress.completed) {
-        onProgressQuest(displayQuest.id, activePlayerQuestData.currentObjectiveIndex);
+        onProgressQuest(displayQuest.id, activePlayerQuestData.currentObjectiveIndex, { puzzleId: npcId });
         // Data will refresh via playerData prop, re-evaluating quest status
     }
   }
@@ -74,10 +77,17 @@ const QuestInteractionPage: React.FC<QuestInteractionPageProps> = ({
         {objectives.map((obj, index) => {
           const isObjectiveCompleted = activeQuestData?.objectiveProgress[index]?.completed || false;
           const isCurrentObjective = activeQuestData?.currentObjectiveIndex === index && !isObjectiveCompleted;
+          let objectiveText = UI_TEXT_TH[obj.descriptionKey];
+          if(obj.type === QuestObjectiveType.COLLECT_ITEM && obj.targetId) {
+            const itemKey = `item_${(obj.targetId as string).replace('_ITEM_ID', '').replace('_ITEM', '')}_NAME` as keyof ThaiUIText;
+            const itemName = UI_TEXT_TH[itemKey] || obj.targetId;
+            objectiveText = objectiveText.replace('{itemName}', itemName).replace('{targetCount}', (obj.targetCount || 1).toString());
+          }
+
           return (
             <li key={index} className={`flex items-start ${isObjectiveCompleted ? 'text-green-300 line-through' : isCurrentObjective ? 'text-yellow-300 font-semibold' : 'text-slate-200'}`}>
               {isObjectiveCompleted ? <CheckCircleIcon className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0 text-green-400"/> : <ClipboardDocumentCheckIcon className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0"/>}
-              <span className="text-outline-black">{UI_TEXT_TH[obj.descriptionKey]}</span>
+              <span className="text-outline-black">{objectiveText}</span>
             </li>
           );
         })}
@@ -87,9 +97,10 @@ const QuestInteractionPage: React.FC<QuestInteractionPageProps> = ({
 
   let npcDialogueKey: keyof ThaiUIText = 'npcGenericGreeting';
   if (npcId === NPCId.MUSIC_MASTER) {
-    npcDialogueKey = (displayQuest?.id === QuestId.LOST_MUSIC_SHEET_MUSIC_MASTER && (displayQuestStatus === 'available' || displayQuestStatus === 'active')) 
-                      ? 'npcMusicMasterLostSheetDialogue' 
-                      : (displayQuest?.id === QuestId.LOST_MUSIC_SHEET_MUSIC_MASTER && displayQuestStatus === 'claimed') 
+    // Removed QuestId.MELODIE_FAVORITE_FLOWER check as it's not defined
+    npcDialogueKey = (displayQuest?.id === QuestId.LOST_MUSIC_SHEET_MUSIC_MASTER && (displayQuestStatus === QuestStatusEnum.AVAILABLE || displayQuestStatus === QuestStatusEnum.ACTIVE)) // Changed to QuestStatusEnum
+                      ? 'npcMusicMasterLostSheetDialogue'
+                      : (displayQuest?.id === QuestId.LOST_MUSIC_SHEET_MUSIC_MASTER && displayQuestStatus === QuestStatusEnum.CLAIMED) // Changed to QuestStatusEnum
                           ? 'npcMusicMasterLostSheetThanks'
                           : 'npcMusicMasterGreeting';
   } else if (npcId === NPCId.MEMENTO_COLLECTOR) {
@@ -97,8 +108,8 @@ const QuestInteractionPage: React.FC<QuestInteractionPageProps> = ({
   } else if (npcId === NPCId.ZALAY_BEAT) {
     npcDialogueKey = 'npcZalayBeatGreeting';
   }
-  if (!displayQuest && displayQuestStatus !== 'claimed') { // 'claimed' could have specific post-quest dialogue handled above
-      const allClaimed = npcSpecificQuests.every(q => getQuestStatus(q.id) === 'claimed');
+  if (!displayQuest && displayQuestStatus !== QuestStatusEnum.CLAIMED) { // 'claimed' could have specific post-quest dialogue handled above
+      const allClaimed = npcSpecificQuests.every(q => getQuestStatus(q.id) === QuestStatusEnum.CLAIMED);
       if (allClaimed && npcSpecificQuests.length > 0) {
           // If all quests from this NPC are claimed, maybe a generic "nothing else for you"
           // This part can be expanded. For now, use default greeting or a "no quests" message below.
@@ -131,8 +142,8 @@ const QuestInteractionPage: React.FC<QuestInteractionPageProps> = ({
       {displayQuest ? (
         <div className="bg-slate-700/70 p-5 rounded-lg shadow-lg">
           <h3 className="text-xl font-semibold text-teal-300 text-outline-black mb-3">{getQuestTitle(displayQuest.id, UI_TEXT_TH)}</h3>
-          
-          {displayQuestStatus === 'available' && (
+
+          {displayQuestStatus === QuestStatusEnum.AVAILABLE && ( // Changed to QuestStatusEnum
             <>
               <p className="text-sm text-slate-100 text-outline-black mb-3">{UI_TEXT_TH[displayQuest.descriptionKey]}</p>
               <div className="mb-3">
@@ -144,7 +155,7 @@ const QuestInteractionPage: React.FC<QuestInteractionPageProps> = ({
                 <ul className="space-y-1 list-inside text-sm">
                   {displayQuest.rewards.map((reward, idx) => (
                     <li key={idx} className="flex items-center text-slate-100 text-outline-black">
-                      <GiftIcon className="w-4 h-4 mr-2 text-yellow-300" /> 
+                      <GiftIcon className="w-4 h-4 mr-2 text-yellow-300" />
                       {reward.amount} {reward.type === 'gcoins' ? 'G-Coins' : reward.type === 'xp' ? 'XP' : UI_TEXT_TH[reward.itemId as keyof ThaiUIText] || reward.itemId || 'Item'}
                     </li>
                   ))}
@@ -156,18 +167,38 @@ const QuestInteractionPage: React.FC<QuestInteractionPageProps> = ({
             </>
           )}
 
-          {displayQuestStatus === 'active' && activePlayerQuestData && (
+          {displayQuestStatus === QuestStatusEnum.ACTIVE && activePlayerQuestData && ( // Changed to QuestStatusEnum
             <>
               <p className="text-sm italic text-yellow-200 text-outline-black mb-3">{UI_TEXT_TH.questInProgressLabel}</p>
               <div className="mb-3">
                 <p className="text-md font-medium text-sky-200 text-outline-black mb-1">{UI_TEXT_TH.questObjectivesLabel}</p>
                 {renderQuestObjectives(displayQuest.objectives, activePlayerQuestData)}
               </div>
-              {/* Specific objective interaction buttons could go here if needed */}
+               {(() => {
+                    const currentObjDef = displayQuest.objectives[activePlayerQuestData.currentObjectiveIndex];
+                    if (currentObjDef && currentObjDef.type === QuestObjectiveType.COLLECT_ITEM && currentObjDef.targetId) {
+                        const itemInInventory = playerData.inventory.find(invItem => invItem.itemId === currentObjDef.targetId);
+                        if (itemInInventory && itemInInventory.quantity >= (currentObjDef.targetCount || 1)) {
+                            const nextObjectiveIndex = activePlayerQuestData.currentObjectiveIndex + 1;
+                            const nextObjectiveDef = displayQuest.objectives[nextObjectiveIndex];
+                            if(nextObjectiveDef && nextObjectiveDef.type === QuestObjectiveType.TALK_TO_NPC && nextObjectiveDef.targetId === npcId) {
+                                return (
+                                    <button
+                                        onClick={() => onProgressQuest(displayQuest!.id, nextObjectiveIndex, { itemId: currentObjDef.targetId as QuestItemId })}
+                                        className="w-full btn-info py-2.5 mt-2"
+                                    >
+                                        มอบ {UI_TEXT_TH[`item_${(currentObjDef.targetId as string).replace('_ITEM_ID', '').replace('_ITEM', '')}_NAME` as keyof ThaiUIText] || currentObjDef.targetId}
+                                    </button>
+                                );
+                            }
+                        }
+                    }
+                    return null;
+                })()}
             </>
           )}
 
-          {displayQuestStatus === 'completed' && (
+          {displayQuestStatus === QuestStatusEnum.COMPLETED && ( // Changed to QuestStatusEnum
              <>
               <p className="text-sm font-semibold text-green-300 text-outline-black mb-3">{UI_TEXT_TH.questCompletedLabel}</p>
               <div className="mb-3">
@@ -179,7 +210,7 @@ const QuestInteractionPage: React.FC<QuestInteractionPageProps> = ({
                  <ul className="space-y-1 list-inside text-sm">
                   {displayQuest.rewards.map((reward, idx) => (
                     <li key={idx} className="flex items-center text-slate-100 text-outline-black">
-                      <GiftIcon className="w-4 h-4 mr-2 text-yellow-300" /> 
+                      <GiftIcon className="w-4 h-4 mr-2 text-yellow-300" />
                       {reward.amount} {reward.type === 'gcoins' ? 'G-Coins' : reward.type === 'xp' ? 'XP' : UI_TEXT_TH[reward.itemId as keyof ThaiUIText] || reward.itemId || 'Item'}
                     </li>
                   ))}
@@ -190,8 +221,8 @@ const QuestInteractionPage: React.FC<QuestInteractionPageProps> = ({
               </button>
             </>
           )}
-           {displayQuestStatus === 'claimed' && (
-             <p className="text-sm text-slate-200 text-outline-black">{npcDialogueKey === 'npcMusicMasterLostSheetThanks' ? UI_TEXT_TH.npcMusicMasterLostSheetThanks : "ขอบคุณสำหรับความช่วยเหลือนะ!"}</p>
+           {displayQuestStatus === QuestStatusEnum.CLAIMED && ( // Changed to QuestStatusEnum
+             <p className="text-sm text-slate-200 text-outline-black">{UI_TEXT_TH[`quest_${displayQuest.id}_thanks` as keyof ThaiUIText] || "ขอบคุณสำหรับความช่วยเหลือนะ!"}</p>
            )}
 
         </div>

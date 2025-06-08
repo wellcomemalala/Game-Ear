@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { PlayerData, InstrumentSoundId, UnlockedItemType, ThaiUIText, MissionType } from '../types'; // Added MissionType
-import { UI_TEXT_TH, ALL_INSTRUMENT_SOUNDS, getInstrumentSoundName, PIANO_LOWEST_MIDI_NOTE, PIANO_HIGHEST_MIDI_NOTE, getFrequency } from '../constants';
+import { UI_TEXT_TH, ALL_INSTRUMENT_SOUNDS, getInstrumentSoundName, ACTUAL_PIANO_LOWEST_MIDI_NOTE, ACTUAL_PIANO_HIGHEST_MIDI_NOTE, getFrequency } from '../constants';
 import { AudioService } from '../services/AudioService';
 import PianoKeyboard from './PianoKeyboard';
 import { MusicNotesIcon } from './icons/MusicNotesIcon';
@@ -45,7 +45,7 @@ const FreestyleJamRoomPage: React.FC<FreestyleJamRoomPageProps> = ({
     setNotesPlayedCount(newCount);
     updateMissionProgress(MissionType.PLAY_NOTES_FREESTYLE_COUNT, 1, { notesPlayed: newCount });
   };
-  
+
 
   return (
     <div className="w-full max-w-3xl mx-auto bg-slate-800 p-6 md:p-8 rounded-xl shadow-2xl text-slate-100 flex flex-col">
@@ -77,38 +77,15 @@ const FreestyleJamRoomPage: React.FC<FreestyleJamRoomPageProps> = ({
           ))}
         </select>
       </div>
-      
+
       {/* Metronome Controls Removed */}
 
       <div className="w-full overflow-x-auto pb-4">
-        <div className="bg-slate-700 p-2 rounded-lg shadow-inner select-none my-4 min-w-[600px]">
-           <div className="w-full h-32 md:h-40 flex justify-center items-stretch">
-             {Array.from({ length: PIANO_HIGHEST_MIDI_NOTE - PIANO_LOWEST_MIDI_NOTE + 1 }, (_, i) => {
-                const midiNote = PIANO_LOWEST_MIDI_NOTE + i;
-                const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-                const isBlackKey = [1, 3, 6, 8, 10].includes(midiNote % 12);
-                const isHighlighted = highlightedNotes.includes(midiNote);
-
-                return (
-                  <button
-                    key={midiNote}
-                    onMouseDown={() => handleNotePlay(midiNote)}
-                    className={`
-                      border flex flex-col justify-end items-center p-1 outline-none
-                      transition-colors duration-100 ease-in-out relative
-                      ${isBlackKey ? 'bg-slate-900 border-slate-700 text-slate-100 h-2/3 z-10 w-[5.5%] -mx-[2.75%]' : 'bg-slate-100 border-slate-400 text-slate-800 h-full w-[7.1428%]'}
-                      ${isHighlighted ? (isBlackKey ? '!bg-sky-500 !border-sky-300' : '!bg-sky-400 !border-sky-600') : ''}
-                      active:opacity-70
-                    `}
-                    title={`${noteNames[midiNote % 12]}${Math.floor(midiNote / 12) - 1}`}
-                    aria-label={`Play note ${noteNames[midiNote % 12]}${Math.floor(midiNote / 12) - 1}`}
-                  >
-                    {/* <span className="text-xs select-none pointer-events-none">{noteNames[midiNote % 12]}</span> */}
-                  </button>
-                );
-            })}
-           </div>
-        </div>
+         <PianoKeyboard
+            highlightedNotes={highlightedNotes}
+            onNoteClick={handleNotePlay}
+            disabled={false} // Piano is always enabled in freestyle
+          />
       </div>
 
     </div>

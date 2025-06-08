@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { PlayerData, Achievement, AchievementId, ThaiUIText, IntervalInfo, ChordInfo, GameMode, UnlockedItemType } from '../types';
-import { UI_TEXT_TH, ALL_INTERVALS, ALL_CHORDS, INITIAL_ACHIEVEMENTS, isMusicalItemUnlocked as checkMusicalItemUnlocked, getPetName } from '../constants'; 
-import { AvatarPlaceholderIcon } from './icons/AvatarPlaceholderIcon'; 
+import { PlayerData, Achievement, AchievementId, ThaiUIText, IntervalInfo, ChordInfo, GameMode, UnlockedItemType, NPCId } from '../types';
+import { UI_TEXT_TH, ALL_INTERVALS, ALL_CHORDS, INITIAL_ACHIEVEMENTS, isMusicalItemUnlocked as checkMusicalItemUnlocked, getPetName, getNPCName } from '../constants';
+import { AvatarPlaceholderIcon } from './icons/AvatarPlaceholderIcon';
 
 interface SummaryPageProps {
   playerData: PlayerData;
-  allAchievements: Achievement[]; 
+  allAchievements: Achievement[];
   getAchievementDetails: (id: AchievementId) => Achievement | undefined;
   onBackToMenu: () => void;
 }
@@ -32,8 +32,8 @@ const SummaryPage: React.FC<SummaryPageProps> = ({ playerData, allAchievements, 
   };
 
   const renderMasterySection = (
-    titleKey: keyof ThaiUIText, 
-    items: (IntervalInfo | ChordInfo)[], 
+    titleKey: keyof ThaiUIText,
+    items: (IntervalInfo | ChordInfo)[],
     correctCounts: { [id: string]: number },
     itemType: GameMode
   ) => {
@@ -48,7 +48,7 @@ const SummaryPage: React.FC<SummaryPageProps> = ({ playerData, allAchievements, 
             const itemMasteryAchievements = getMasteryAchievementsForItem(item.id, itemType);
             const unlockedItemAchievements = itemMasteryAchievements.filter(ach => playerData.unlockedAchievementIds.includes(ach.id));
             const nextAchievement = itemMasteryAchievements.find(ach => !playerData.unlockedAchievementIds.includes(ach.id));
-            
+
             return (
               <div key={item.id} className={`p-3 rounded-md ${isItemUnlockedForTraining ? 'bg-slate-600/70' : 'bg-slate-600/30'}`}> {/* Removed opacity-75 */}
                 <p className={`font-semibold text-lg ${isItemUnlockedForTraining ? 'text-secondary-light' : 'text-slate-300 text-outline-black'}`}>
@@ -86,6 +86,8 @@ const SummaryPage: React.FC<SummaryPageProps> = ({ playerData, allAchievements, 
   const avatarColor = generateColorFromSeed(avatarSeedText);
   const avatarInitial = playerData.playerName ? playerData.playerName.charAt(0).toUpperCase() : 'P';
 
+  const melodieRelationship = playerData.relationships?.find(r => r.npcId === NPCId.MELODIE);
+
 
   return (
     <div className="w-full max-w-3xl mx-auto bg-card p-5 md:p-7 rounded-xl shadow-2xl flex flex-col space-y-5">
@@ -94,7 +96,7 @@ const SummaryPage: React.FC<SummaryPageProps> = ({ playerData, allAchievements, 
         <h1 className="text-2xl md:text-3xl font-bold text-sky-300 text-outline-black">
           {UI_TEXT_TH.summaryPageTitle}
         </h1>
-        <div 
+        <div
             className="w-10 h-10 rounded-full border-2 border-slate-500 flex items-center justify-center text-slate-100 text-lg font-bold shadow-sm"
             style={{ backgroundColor: avatarColor }}
             title={playerData.playerName || "ผู้เล่น"}
@@ -115,6 +117,9 @@ const SummaryPage: React.FC<SummaryPageProps> = ({ playerData, allAchievements, 
             <p>{UI_TEXT_TH.totalCorrectAnswers} (ขั้นคู่): <span className="font-semibold text-white">{playerData.intervalQuestionsAnswered || 0}</span></p>
             <p>{UI_TEXT_TH.totalCorrectAnswers} (คอร์ด): <span className="font-semibold text-white">{playerData.chordQuestionsAnswered || 0}</span></p>
             <p>{UI_TEXT_TH.highScore} (Streak): <span className="font-semibold text-white">{playerData.highestStreak || 0}</span></p>
+            {melodieRelationship && (
+              <p>{UI_TEXT_TH.melodieRPStatus.replace('{rp}', melodieRelationship.rp.toString())}</p>
+            )}
         </div>
       </div>
 
@@ -133,7 +138,7 @@ const SummaryPage: React.FC<SummaryPageProps> = ({ playerData, allAchievements, 
           </ul>
         )}
       </div>
-      
+
       <div className="space-y-5">
         {renderMasterySection('intervalsMastery', ALL_INTERVALS, playerData.intervalCorrectCounts, GameMode.INTERVALS)}
         {renderMasterySection('chordsMastery', ALL_CHORDS, playerData.chordCorrectCounts, GameMode.CHORDS)}

@@ -1,17 +1,18 @@
 
+
 import React from 'react';
-import { PlayerData, NPCId, QuestStatus, QuestId, ThaiUIText } from '../types';
+import { PlayerData, NPCId, QuestStatusEnum, QuestId, ThaiUIText } from '../types'; // Changed QuestStatus to QuestStatusEnum
 import { UI_TEXT_TH, getNPCName, QUEST_DEFINITIONS } from '../constants';
 import { UsersIcon } from './icons/UsersIcon'; 
 import { ChatBubbleLeftRightIcon } from './icons/ChatBubbleLeftRightIcon';
-import { ExclamationCircleIcon } from './icons/ExclamationCircleIcon'; // Changed path
-import { QuestionMarkCircleIcon } from './icons/QuestionMarkCircleIcon'; // Changed path
+import { ExclamationCircleIcon } from './icons/ExclamationCircleIcon'; 
+import { QuestionMarkCircleIcon } from './icons/QuestionMarkCircleIcon'; 
 
 interface NPCHubPageProps {
   playerData: PlayerData;
   onSelectNPC: (npcId: NPCId) => void;
   onBackToMenu: () => void;
-  getQuestStatus: (questId: QuestId) => QuestStatus;
+  getQuestStatus: (questId: QuestId) => QuestStatusEnum; // Changed QuestStatus to QuestStatusEnum
 }
 
 const ALL_NPCS_IN_HUB: { id: NPCId, icon?: React.ReactNode }[] = [
@@ -56,11 +57,11 @@ const NPCHubPage: React.FC<NPCHubPageProps> = ({
 
           for (const qDef of npcQuests) {
             const status = getQuestStatus(qDef.id);
-            if (status === 'available') {
+            if (status === QuestStatusEnum.AVAILABLE) { // Changed to QuestStatusEnum
               hasAvailableQuest = true;
               break; 
             }
-            if (status === 'completed') {
+            if (status === QuestStatusEnum.COMPLETED) { // Changed to QuestStatusEnum
               hasCompletedQuest = true;
             }
           }

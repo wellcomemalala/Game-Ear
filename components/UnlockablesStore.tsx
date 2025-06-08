@@ -2,16 +2,16 @@
 import React, { useState } from 'react';
 import { PlayerData, IntervalInfo, ChordInfo, UnlockedItemType, ThaiUIText, PetAbilityType } from '../types'; // Added PetAbilityType
 import { UI_TEXT_TH, ALL_INTERVALS, ALL_CHORDS } from '../constants';
-import { LockClosedIcon } from './icons/LockClosedIcon';
-import { LockOpenIcon } from './icons/LockOpenIcon';
-import { CoinIcon } from './icons/CoinIcon';
+import { LockClosedIcon } from '../icons/LockClosedIcon';
+import { LockOpenIcon } from '../icons/LockOpenIcon';
+import { CoinIcon } from '../icons/CoinIcon';
 
 interface UnlockablesStoreProps {
   playerData: PlayerData;
   onBackToMenu: () => void;
   unlockMusicalItem: (itemId: string, itemType: UnlockedItemType, cost: number) => boolean;
   isMusicalItemUnlocked: (itemId: string, itemType: UnlockedItemType) => boolean;
-  getActivePetAbilityMultiplier: (playerDataState: PlayerData, abilityType: PetAbilityType) => number; // New
+  getActivePetAbilityMultiplier: (abilityType: PetAbilityType) => number; // Corrected signature
 }
 
 const UnlockablesStore: React.FC<UnlockablesStoreProps> = ({
@@ -19,12 +19,12 @@ const UnlockablesStore: React.FC<UnlockablesStoreProps> = ({
   onBackToMenu,
   unlockMusicalItem,
   isMusicalItemUnlocked,
-  getActivePetAbilityMultiplier, // New
+  getActivePetAbilityMultiplier, 
 }) => {
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
   const calculateFinalCost = (baseCost: number): number => {
-    const discountMultiplier = getActivePetAbilityMultiplier(playerData, PetAbilityType.GCOIN_DISCOUNT_UNLOCKABLES);
+    const discountMultiplier = getActivePetAbilityMultiplier(PetAbilityType.GCOIN_DISCOUNT_UNLOCKABLES); // Corrected call
     return Math.max(0, Math.round(baseCost * (1 - discountMultiplier)));
   };
 
@@ -37,7 +37,7 @@ const UnlockablesStore: React.FC<UnlockablesStoreProps> = ({
       setTimeout(() => setFeedbackMessage(null), 3000);
       return;
     }
-    const success = unlockMusicalItem(item.id, itemType, finalCost); // Pass finalCost
+    const success = unlockMusicalItem(item.id, itemType, finalCost); 
     if (success) {
       setFeedbackMessage(`${UI_TEXT_TH.unlocked} ${item.name}!`);
     } else {
