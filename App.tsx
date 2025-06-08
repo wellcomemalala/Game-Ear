@@ -41,44 +41,75 @@ import FinalBossBattlePage from './components/pages/FinalBossBattlePage';
 import { PlayerStatusBar } from './components/rpg/PlayerStatusBar';
 import NotificationArea from './components/rpg/NotificationArea';
 
+// Icons for MainMenu
+import { HomeIcon } from './components/icons/HomeIcon';
+import { HeartIcon } from './components/icons/HeartIcon';
+import { MissionScrollIcon } from './components/icons/MissionScrollIcon';
+import { LairIcon } from './components/icons/LairIcon';
+import { MusicNotesIcon } from './components/icons/MusicNotesIcon';
+import { UsersIcon } from './components/icons/UsersIcon';
+import { ShoppingBagIcon } from './components/icons/ShoppingBagIcon';
+import { LockOpenIcon } from './components/icons/LockOpenIcon';
+import { PetIcon } from './components/icons/PetIcon';
+import { CogIcon } from './components/icons/CogIcon';
+import { BookOpenIcon } from './components/icons/BookOpenIcon';
+import ChartBarIcon from './components/icons/ChartBarIcon';
+import InformationCircleIcon from './components/icons/InformationCircleIcon';
+import ExternalLinkIcon from './components/icons/ExternalLinkIcon';
+import FireIcon from './components/icons/FireIcon';
+
+
 const MainMenu: React.FC<{ navigateTo: (view: AppView) => void, playerData: PlayerData | null }> = ({ navigateTo, playerData }) => {
   if (!playerData) return null;
   const hasPets = playerData.ownedPetIds && playerData.ownedPetIds.length > 0;
   const allMonstersDefeated = ALL_MONSTERS.every(m => playerData.defeatedMonsterIds.includes(m.id)); 
 
+  const iconClass = "w-5 h-5 text-slate-300"; // Common class for menu icons
+
   return (
     <div className="flex flex-col items-center space-y-3 p-4">
       <h1 className="text-3xl font-bold text-sky-300 mb-4 text-outline-black">เมนูหลัก</h1>
-      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.DIFFICULTY_SELECTION)}>{UI_TEXT_TH.chooseMode}</button>
-      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.MY_HOME)}>{UI_TEXT_TH.myHomeScreenTitle}</button>
-      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.RELATIONSHIP_JOURNAL)}>{UI_TEXT_TH.viewRelationshipJournal}</button>
-      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.MISSIONS_PAGE)}>{UI_TEXT_TH.missionsPageTitle}</button>
-      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.MONSTER_LAIR)}>{UI_TEXT_TH.monsterLairTitle}</button>
+      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.DIFFICULTY_SELECTION)}><MusicNotesIcon className={iconClass} /> {UI_TEXT_TH.chooseMode}</button>
+      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.MY_HOME)}><HomeIcon className={iconClass} /> {UI_TEXT_TH.myHomeScreenTitle}</button>
+      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.RELATIONSHIP_JOURNAL)}><HeartIcon className={iconClass} /> {UI_TEXT_TH.viewRelationshipJournal}</button>
+      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.MISSIONS_PAGE)}><MissionScrollIcon className={iconClass} /> {UI_TEXT_TH.missionsPageTitle}</button>
+      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.MONSTER_LAIR)}><LairIcon className={iconClass} /> {UI_TEXT_TH.monsterLairTitle}</button>
       {allMonstersDefeated && !playerData.isGoldenEarGod && ( 
-        <button className="menu-button w-full max-w-sm btn-accent" onClick={() => navigateTo(AppView.FINAL_BOSS_BATTLE)}>{UI_TEXT_TH.finalBoss_MainMenuButton}</button>
+        <button className="menu-button btn-accent w-full max-w-sm" onClick={() => navigateTo(AppView.FINAL_BOSS_BATTLE)}><FireIcon className="w-5 h-5" /> {UI_TEXT_TH.finalBoss_MainMenuButton}</button>
       )}
-      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.FREESTYLE_JAM_ROOM)}>{UI_TEXT_TH.freestyleJamRoomButton}</button>
-      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.NPC_HUB)}>{UI_TEXT_TH.viewNPCHub}</button>
-      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.SHOP)}>{UI_TEXT_TH.viewShop}</button>
-      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.UNLOCKABLES_STORE)}>{UI_TEXT_TH.viewUnlockables}</button>
+      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.FREESTYLE_JAM_ROOM)}><MusicNotesIcon className={iconClass} /> {UI_TEXT_TH.freestyleJamRoomButton}</button>
+      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.NPC_HUB)}><UsersIcon className={iconClass} /> {UI_TEXT_TH.viewNPCHub}</button>
+      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.SHOP)}><ShoppingBagIcon className={iconClass} /> {UI_TEXT_TH.viewShop}</button>
+      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.UNLOCKABLES_STORE)}><LockOpenIcon className={iconClass} /> {UI_TEXT_TH.viewUnlockables}</button>
       
-      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.PET_ADOPTION_PAGE)}>{UI_TEXT_TH.viewPetAdoption}</button>
+      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.PET_ADOPTION_PAGE)}><PetIcon className={iconClass} /> {UI_TEXT_TH.viewPetAdoption}</button>
       {hasPets && (
-        <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.PET_MANAGEMENT_PAGE)}>{UI_TEXT_TH.manageMyPet}</button>
+        <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.PET_MANAGEMENT_PAGE)}><CogIcon className={iconClass} /> {UI_TEXT_TH.manageMyPet}</button>
       )}
       {!hasPets && (
          <button 
             className="menu-button w-full max-w-sm opacity-50 cursor-not-allowed" 
             disabled 
             title={UI_TEXT_TH.manageMyPetTooltipNoPets || "รับเลี้ยงเพื่อนซี้ก่อน"}>
-            {UI_TEXT_TH.manageMyPet}
+            <CogIcon className={`${iconClass} opacity-50`} /> {UI_TEXT_TH.manageMyPet}
         </button>
       )}
 
-      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.SUMMARY_PAGE)}>{UI_TEXT_TH.viewSummary}</button>
-      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.MONSTERPEDIA)}>{UI_TEXT_TH.viewMonsterpedia}</button>
-      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.GAME_GUIDE_PAGE)}>{UI_TEXT_TH.viewGameGuide}</button>
-      <button className="btn-settings w-full max-w-sm mt-2" onClick={() => navigateTo(AppView.SETTINGS)}>{UI_TEXT_TH.viewSettings}</button>
+      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.SUMMARY_PAGE)}><ChartBarIcon className={iconClass} /> {UI_TEXT_TH.viewSummary}</button>
+      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.MONSTERPEDIA)}><BookOpenIcon className={iconClass} /> {UI_TEXT_TH.viewMonsterpedia}</button>
+      <button className="menu-button w-full max-w-sm" onClick={() => navigateTo(AppView.GAME_GUIDE_PAGE)}><InformationCircleIcon className={iconClass} /> {UI_TEXT_TH.viewGameGuide}</button>
+      <button className="menu-button w-full max-w-sm mt-2" onClick={() => navigateTo(AppView.SETTINGS)}><CogIcon className={iconClass} /> {UI_TEXT_TH.viewSettings}</button>
+    
+      <a
+        href="https://www.facebook.com/keetazalay24"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="menu-button w-full max-w-sm mt-4"
+        role="button" 
+      >
+        <ExternalLinkIcon className={iconClass} />
+        <span>สร้างโดย Zalay Beat x Ai</span>
+      </a>
     </div>
   );
 };

@@ -37,7 +37,7 @@
             success: {
               light: '#4ADE80', // Green-400
               DEFAULT: '#22C55E', // Green-500
-              dark: '#16A34A', // Green-600
+              dark: '#16A34A', // Green-500
             },
             warning: {
               light: '#FCD34D', // Amber-300
@@ -137,12 +137,12 @@
       }
        /* Settings Button */
       .btn-settings {
-          @apply btn-neutral;
+          @apply btn-neutral; /* This will be overridden if menu-button is applied */
       }
 
       /* Menu Button Style */
       .menu-button {
-        @apply btn bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-slate-500 text-left justify-start px-4 py-3;
+        @apply btn bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-slate-500 text-left justify-start px-4 py-3 flex items-center space-x-3;
       }
 
       /* Custom Scrollbar */
