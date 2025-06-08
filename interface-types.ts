@@ -1,4 +1,3 @@
-
 // interface-types.ts
 
 // Import enums that are used by the interfaces in this file
@@ -502,7 +501,6 @@ export interface UsePlayerDataReturn {
   isMusicalItemUnlocked: (itemId: string, itemType: UnlockedItemType.INTERVAL | UnlockedItemType.CHORD) => boolean;
   checkForDailyLoginReward: () => void;
   setGoldenEarGodStatusAndReward: () => void; // Added
-  activateUnlockMode: () => void; // Added for cheat mode
   relationshipSystem: RelationshipSystemReturn;
   trainingSystem: TrainingSystemReturn;
   monsterSystem: MonsterSystemReturn;

@@ -798,11 +798,4 @@ export const UI_TEXT_TH: ThaiUIText = {
   finalBoss_MainMenuButton: "บททดสอบสุดท้าย",
   ach_DEFEAT_FINAL_BOSS_name: "ผู้พิชิตมหาอาจารย์โสตทิพย์",
   ach_DEFEAT_FINAL_BOSS_desc: "เอาชนะบททดสอบสุดท้ายและได้รับยศเทพเจ้าหูทอง",
-
-  // Unlock Mode Texts
-  unlockModeButtonLabel: "โหมดปลดล็อก",
-  unlockModePasswordPrompt: "กรุณาใส่รหัสปลดล็อก:",
-  unlockModeSuccess: "โหมดปลดล็อกทำงานสำเร็จ! ได้รับ 1,000,000 G-Coins และปลดล็อกเนื้อหาดนตรีทั้งหมด",
-  unlockModeFailure: "รหัสผ่านไม่ถูกต้อง!",
-  unlockModeMonsterDefeatedInstantly: "อสูร {monsterName} ถูกปราบในพริบตาด้วยพลังโหมดปลดล็อก!",
 };

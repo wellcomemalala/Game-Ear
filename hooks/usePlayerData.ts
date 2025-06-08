@@ -578,30 +578,6 @@ export const usePlayerData = (): UsePlayerDataReturn => {
       return updatedData;
     });
   }, [setPlayerDataState, addNotification, unlockAchievementInternal, checkAndApplyLevelUp]);
-  
-  const activateUnlockMode = useCallback(() => {
-    setPlayerDataState(prev => {
-        if (!prev) return null;
-        const newUnlockedItems = [...prev.unlockedMusicalItemIds];
-        ALL_INTERVALS.forEach(interval => {
-            if (interval.isAdvanced && !newUnlockedItems.some(item => item.id === interval.id && item.type === UnlockedItemType.INTERVAL)) {
-                newUnlockedItems.push({ type: UnlockedItemType.INTERVAL, id: interval.id });
-            }
-        });
-        ALL_CHORDS.forEach(chord => {
-            if (chord.isAdvanced && !newUnlockedItems.some(item => item.id === chord.id && item.type === UnlockedItemType.CHORD)) {
-                newUnlockedItems.push({ type: UnlockedItemType.CHORD, id: chord.id });
-            }
-        });
-        addNotification({ type: 'info', titleKey: 'appName', messageKey: undefined, itemName: UI_TEXT_TH.unlockModeSuccess });
-        return {
-            ...prev,
-            gCoins: 1000000,
-            unlockedMusicalItemIds: newUnlockedItems,
-        };
-    });
-  }, [setPlayerDataState, addNotification, UI_TEXT_TH]);
-
 
   const [notificationsState, setNotificationsState] = useState<NotificationMessage[]>([]); // Moved from outside
 
@@ -626,7 +602,6 @@ export const usePlayerData = (): UsePlayerDataReturn => {
     isMusicalItemUnlocked,
     checkForDailyLoginReward,
     setGoldenEarGodStatusAndReward,
-    activateUnlockMode, // Expose new function
 
     relationshipSystem,
     trainingSystem,
